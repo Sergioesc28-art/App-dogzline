@@ -15,4 +15,14 @@ Descripción de la problemática
 
 "Los propietarios de mascotas enfrentan dificultades para encontrar el compañero ideal para el apareamiento selectivo de sus canes."
 
+Objetivos
+
+| Los usuarios encuentran una plataforma fácil de usar para conectar a sus perros con compañeros de juego o para apareamiento selectivo.
+
+| Ser la opción preferida en el emparejamiento de perros, destacando frente a la competencia por la precisión en las recomendaciones. 
+
+Descripción de la problemática
+
+"Los propietarios de mascotas enfrentan dificultades para encontrar el compañero ideal para el apareamiento selectivo de sus canes."
+
 ¡Descubre el mundo de Dogzline y conecta a tu mascota con nuevos amigos hoy mismo!
