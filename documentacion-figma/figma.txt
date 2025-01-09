@@ -1,0 +1,46 @@
+El presente caso de estudio se realizó para el proyecto de una aplicación destinada a facilitar el apareamiento selectivo de perros, ofreciendo a los usuarios un espacio seguro para la búsqueda de parejas compatibles para sus mascotas. El objetivo del proyecto fue desarrollar una app que optimizara el proceso de selección de pareja en base a factores de compatibilidad y preferencias del dueño, promoviendo la salud genética de las razas. Este proyecto combina aspectos sociales y tecnológicos para facilitar el apareamiento controlado, apoyándose en herramientas digitales de geolocalización, perfiles detallados y compatibilidad genética.
+
+El equipo está conformado por tres integrantes responsables del diseño de la experiencia de usuario y del desarrollo de la aplicación. Dado el enfoque del proyecto, se utilizó una metodología centrada en el usuario, realizando una investigación para entender cómo los dueños de perros eligen pareja para sus mascotas y los factores que valoran en este proceso.
+
+Para la investigación, se estableció que el producto a desarrollar se enfoca en personas con las siguientes características:
+
+Edad: entre 20 y 60 años.
+Nivel educativo: desde educación básica hasta educación superior.
+
+Con base en estos parámetros, se realizaron 15 encuestas y 20 entrevistas (llevadas a cabo por dos entrevistadores). Las entrevistas se realizaron de manera individual con cada usuario, y cada sesión contó con dos integrantes del equipo. Uno de ellos asumió el rol de entrevistador, mientras que el otro se encargó de observar y registrar las emociones y lenguaje corporal del usuario, aspecto que fue muy útil para el análisis posterior. Las preguntas formuladas durante las entrevistas fueron clave para obtener información relevante sobre las expectativas y preocupaciones de los usuarios.
+
+A continuación se presenta el proceso seguido por los usuarios actualmente para encontrar pareja para sus perros, destacando los retos y pasos que Dogzline busca optimizar:
+
+Búsqueda de posibles parejas:
+
+Los dueños de perros suelen iniciar la búsqueda manualmente, recurriendo a redes sociales, grupos de entusiastas de la raza y recomendaciones de conocidos, en un proceso que requiere mucho tiempo y esfuerzo debido a la falta de opciones centralizadas y confiables.
+
+Recolección de información:
+Tras encontrar posibles opciones, los dueños recopilan información sobre cada perro, incluyendo raza, edad, tamaño, salud, temperamento, video del comportamiento y etc. Esto se realiza mayormente a través de mensajes en redes sociales o por teléfono, implicando múltiples intercambios y largos tiempos de espera.
+
+Primer contacto con el dueño de la posible pareja:
+
+Los dueños se comunican directamente con los otros dueños para confirmar la disponibilidad y discutir detalles sobre la compatibilidad de los perros. Esto requiere largas conversaciones y coordinación para entender las expectativas de ambas partes.
+
+Acuerdo para un posible encuentro:
+
+Una vez que ambas partes están de acuerdo en los aspectos básicos de compatibilidad, se coordina la posibilidad de un encuentro futuro entre los perros para verificar su compatibilidad en persona. En esta fase, los dueños acuerdan seguir en contacto para cualquier ajuste necesario.
+
+Con base en la investigación, se determinaron los tiempos promedio que los usuarios invierten en cada etapa del proceso:
+
+Búsqueda de parejas: 30 - 60 minutos
+Recolección de información de posibles parejas: 20 - 50 minutos
+Contactar y negociar con otros dueños: 15 - 30 minutos
+Coordinación para el encuentro inicial: 10 - 20 minutos
+
+Estos tiempos resaltan la necesidad de una herramienta que centralice y agilice estas actividades.
+
+
+
+
+
+
+
+
+
+
