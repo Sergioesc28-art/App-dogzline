@@ -1,4 +1,4 @@
-# dogzline ![imagen](https://github.com/user-attachments/assets/ccd7fa80-16fc-4106-90f4-118d99856886)
+![imagen](https://github.com/user-attachments/assets/ccd7fa80-16fc-4106-90f4-118d99856886)
 
 ¿Qué es dogzline?
 
