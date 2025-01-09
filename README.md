@@ -25,4 +25,10 @@ Descripción de la problemática
 
 "Los propietarios de mascotas enfrentan dificultades para encontrar el compañero ideal para el apareamiento selectivo de sus canes."
 
+Mercado potencial
+
+Criadores Profesionales
+
+
+
 ¡Descubre el mundo de Dogzline y conecta a tu mascota con nuevos amigos hoy mismo!
