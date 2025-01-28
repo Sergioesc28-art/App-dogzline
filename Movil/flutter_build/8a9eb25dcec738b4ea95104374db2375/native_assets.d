@@ -1,0 +1,1 @@
+ C:\\Users\\carlo\\Desktop\\Proyecto_Dogzline\\proyecto_dogzline\\.dart_tool\\flutter_build\\8a9eb25dcec738b4ea95104374db2375\\native_assets.yaml: 

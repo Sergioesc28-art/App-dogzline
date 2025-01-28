@@ -1,0 +1,43 @@
+name: proyecto_dogzline
+description: "A new Flutter project focused on DogzLine."
+publish_to: 'none' # Indica que el proyecto no se publicará en pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0 <4.0.0" # Compatibilidad con Flutter SDK estable
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Iconos estilo Cupertino para compatibilidad con iOS
+  cupertino_icons: ^1.0.8
+
+  # Iconos FontAwesome para Flutter
+  font_awesome_flutter: ^10.1.0
+
+  # Paquete para seleccionar imágenes
+  image_picker: ^0.8.4+3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Buenas prácticas y recomendaciones de linting
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true # Habilita el uso de Material Icons
+
+  # Ruta para los recursos gráficos (imágenes, logos, etc.)
+  assets:
+    - assets/Logo_dogzline.png # Cambia esta ruta si tu imagen tiene otro nombre o ubicación
+
+  # Configuración opcional para fuentes personalizadas
+  # fonts:
+  #   - family: NombreFuente
+  #     fonts:
+  #       - asset: assets/fonts/NombreFuente-Regular.ttf
+  #       - asset: assets/fonts/NombreFuente-Bold.ttf
+  #         weight: 700
