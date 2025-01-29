@@ -1,0 +1,197 @@
+import 'package:flutter/material.dart';
+import 'profile_screen.dart'; // Importa el ProfileScreen
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: SettingsScreen(),
+    );
+  }
+}
+
+class SettingsScreen extends StatefulWidget {
+  @override
+  _SettingsScreenState createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  double maxDistance = 160;
+  RangeValues ageRange = RangeValues(1, 4);
+  bool showFarDogs = false;
+  bool showOutOfRangeDogs = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFFFFF8E1), // Fondo amarillo claro
+      appBar: AppBar(
+        backgroundColor: Color(0xFFFFF8E1),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.brown),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
+            );
+          },
+        ),
+        title: Text(
+          'Configuraciones y Privacidad',
+          style: TextStyle(
+            color: Colors.brown,
+            fontFamily: 'Cursive',
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSliderSetting(
+              'Distancias Maxima',
+              '${maxDistance.toInt()} Km',
+              maxDistance,
+              (value) {
+                setState(() {
+                  maxDistance = value;
+                });
+              },
+            ),
+            _buildSwitchSetting(
+              'Mostrar perros más lejos si me quedo sin perfiles para ver.',
+              showFarDogs,
+              (value) {
+                setState(() {
+                  showFarDogs = value;
+                });
+              },
+            ),
+            _buildRangeSliderSetting(
+              'Rango de edad',
+              ageRange,
+              (values) {
+                setState(() {
+                  ageRange = values;
+                });
+              },
+            ),
+            _buildSwitchSetting(
+              'Mostrar perros fuera de mi rango preferido, si me quedo sin perfiles para ver.',
+              showOutOfRangeDogs,
+              (value) {
+                setState(() {
+                  showOutOfRangeDogs = value;
+                });
+              },
+            ),
+            Spacer(),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown, // Changed from 'primary' to 'backgroundColor'
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  child: Text(
+                    'Cerrar sesión',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliderSetting(String label, String value, double currentValue, Function(double) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: Colors.brown, fontSize: 16),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Slider(
+                value: currentValue,
+                min: 0,
+                max: 200,
+                activeColor: Colors.brown,
+                onChanged: onChanged,
+              ),
+            ),
+            Text(value, style: TextStyle(color: Colors.brown)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSwitchSetting(String label, bool currentValue, Function(bool) onChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(color: Colors.brown, fontSize: 14),
+          ),
+        ),
+        Switch(
+          value: currentValue,
+          activeColor: Colors.brown,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRangeSliderSetting(String label, RangeValues currentRange, Function(RangeValues) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: Colors.brown, fontSize: 16),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: RangeSlider(
+                values: currentRange,
+                min: 0,
+                max: 10,
+                divisions: 10,
+                activeColor: Colors.brown,
+                onChanged: onChanged,
+              ),
+            ),
+            Text(
+              '${currentRange.start.toInt()}-${currentRange.end.toInt()}',
+              style: TextStyle(color: Colors.brown),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

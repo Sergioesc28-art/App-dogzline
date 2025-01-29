@@ -1,8 +1,63 @@
 import 'package:flutter/material.dart';
 import 'dialogue.dart'; // Importa el DialogueScreen
 import 'create_dog.dart'; // Importa el CreateDogPage
+import 'config.dart'; // Importa el SettingsScreen
+import 'apartado_screen.dart'; // Importa el ApartadoScreen
+import 'perfil.dart'; // Importa el PerfilScreen
+import 'dogzline_ui.dart'; // Importa el DogzlineScreen
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  int _selectedIndex = 0; // Home es el primer ítem en la barra de navegación
+
+  static List<Widget> _widgetOptions = <Widget>[
+    ProfileScreenContent(), // Home Page
+    ApartadoScreen(),
+    PerfilScreen(), // Perfil
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Apartado',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.brown[700],
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+      ),
+      backgroundColor: Color(0xFFF9F6E8),
+    );
+  }
+}
+
+class ProfileScreenContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +83,10 @@ class ProfileScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.settings, color: Colors.brown[700]),
             onPressed: () {
-              // Acción para ir a ajustes
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()), // Navegar a SettingsScreen
+              );
             },
           ),
           IconButton(
@@ -175,23 +233,29 @@ class ProfileScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundImage:
-                                AssetImage('assets/dog_chucho.jpg'),
-                          ),
-                          SizedBox(height: 8),
-                          Text('Chucho'),
-                        ],
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => DogzlineScreen()),
+                          );
+                        },
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundImage: AssetImage('assets/dog_chucho.jpg'),
+                            ),
+                            SizedBox(height: 8),
+                            Text('Chucho'),
+                          ],
+                        ),
                       ),
                       Column(
                         children: [
                           CircleAvatar(
                             radius: 30,
-                            backgroundImage:
-                                AssetImage('assets/dog_rocky.jpg'),
+                            backgroundImage: AssetImage('assets/dog_rocky.jpg'),
                           ),
                           SizedBox(height: 8),
                           Text('Rocky'),
@@ -223,24 +287,6 @@ class ProfileScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Apartado',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
-        ],
-        selectedItemColor: Colors.brown[700],
-        unselectedItemColor: Colors.grey,
       ),
       backgroundColor: Color(0xFFF9F6E8),
     );

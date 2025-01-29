@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'profile_screen.dart'; // Importa el ProfileScreen
+import 'registro.dart'; // Importa el RegistroScreen
 
 void main() {
   runApp(MyApp());
@@ -124,7 +125,12 @@ class LoginPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RegistroScreen()),
+                    );
+                  },
                   child: RichText(
                     text: TextSpan(
                       text: '¿No tienes una cuenta? ',
