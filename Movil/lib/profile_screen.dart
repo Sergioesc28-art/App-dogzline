@@ -5,6 +5,9 @@ import 'config.dart'; // Importa el SettingsScreen
 import 'apartado_screen.dart'; // Importa el ApartadoScreen
 import 'perfil.dart'; // Importa el PerfilScreen
 import 'dogzline_ui.dart'; // Importa el DogzlineScreen
+import 'services/api_service.dart'; // Importa el ApiService
+import 'models/data_model.dart'; // Importa el modelo de datos
+import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -57,7 +60,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class ProfileScreenContent extends StatelessWidget {
+class ProfileScreenContent extends StatefulWidget {
+  @override
+  _ProfileScreenContentState createState() => _ProfileScreenContentState();
+}
+
+class _ProfileScreenContentState extends State<ProfileScreenContent> {
+  final ApiService _apiService = ApiService();
+  List<Data> _mascotas = [];
+  bool _isLoading = true;
+  String _userName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserName();
+    _fetchMascotas();
+  }
+
+  Future<void> _fetchUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userName = prefs.getString('userName') ?? 'Usuario';
+    });
+  }
+
+  Future<void> _fetchMascotas() async {
+    try {
+      List<Data> mascotas = await _apiService.getMascotasByUser(1, 10);
+      setState(() {
+        _mascotas = mascotas;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al obtener las mascotas: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,7 +168,7 @@ class ProfileScreenContent extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'Maria Jose',
+                    _userName,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -230,58 +274,52 @@ class ProfileScreenContent extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => DogzlineScreen()),
-                          );
-                        },
-                        child: Column(
+                  _isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundImage: AssetImage('assets/dog_chucho.jpg'),
+                            ..._mascotas.map((mascota) {
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => DogzlineScreen()),
+                                  );
+                                },
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 30,
+                                      backgroundImage: NetworkImage(mascota.fotos),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(mascota.nombre),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const CreateDogPage()),
+                                    );
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 30,
+                                    backgroundColor: Colors.brown[100],
+                                    child: Icon(Icons.add, color: Colors.brown[700]),
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text('Registrar'),
+                              ],
                             ),
-                            SizedBox(height: 8),
-                            Text('Chucho'),
                           ],
                         ),
-                      ),
-                      Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundImage: AssetImage('assets/dog_rocky.jpg'),
-                          ),
-                          SizedBox(height: 8),
-                          Text('Rocky'),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const CreateDogPage()),
-                              );
-                            },
-                            child: CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.brown[100],
-                              child: Icon(Icons.add, color: Colors.brown[700]),
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text('Registrar'),
-                        ],
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),

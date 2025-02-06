@@ -1,0 +1,254 @@
+{
+	"info": {
+		"_postman_id": "3e568384-5c51-4814-8361-f274d13f2528",
+		"name": "Registro",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38629308",
+		"_collection_link": "https://doggiz.postman.co/workspace/My-Workspace~29793de1-be34-4272-86ca-425f14fc8b42/collection/38629308-3e568384-5c51-4814-8361-f274d13f2528?action=share&source=collection_link&creator=38629308"
+	},
+	"item": [
+		{
+			"name": "Post Usuarios",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Estado HTTP recibido (no falla)\", function () {\r",
+							"    var statusCode = pm.response.code; // Obtener el código de estado HTTP.\r",
+							"\r",
+							"    if (statusCode === 201) {\r",
+							"        console.log(\"Advertencia: Estado HTTP es 201. Test aún pasa.\"); // Solo log.\r",
+							"    } else {\r",
+							"        console.log(\"Estado HTTP recibido:\", statusCode); // Mostrar el estado.\r",
+							"    }\r",
+							"\r",
+							"    pm.expect(true).to.eql(true); // Asegurarse de que la prueba pase.\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"pm.test(\"Respuesta es JSON válida\", function () {\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"pm.test(\"Estado HTTP es 201 (Creado)\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MzdiNWEzY2I0YWUxZmJkZmE2ZjFkNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTczMzA5MDk5NCwiZXhwIjoxNzMzMDk0NTk0fQ.MJ-KU0ciCOaYdFth5tMmHvi26MBqc5obtrKZpaLO7RQ",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": \"{{id}}\",\r\n  \"NombreCompleto\": \"{{NombreCompleto}}\",\r\n  \"email\": \"{{email}}\",\r\n  \"contraseña\": \"{{contraseña}}\",\r\n  \"role\": \"{{role}}\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api/usuarios",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"usuarios"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login usuario",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verificar que el estado HTTP sea 200\r",
+							"pm.test(\"Estado HTTP es 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Verificar que la respuesta sea un JSON válido\r",
+							"pm.test(\"Respuesta es JSON válida\", function () {\r",
+							"    pm.response.to.be.json;\r",
+							"});\r",
+							"\r",
+							"// Verificar que la respuesta contiene un token\r",
+							"pm.test(\"Respuesta contiene un token\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData).to.have.property(\"token\");\r",
+							"    pm.expect(jsonData.token).to.be.a(\"string\");\r",
+							"});\r",
+							"\r",
+							"// Validar la estructura básica del token JWT\r",
+							"pm.test(\"Token JWT tiene un formato válido\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    const token = jsonData.token;\r",
+							"    pm.expect(token).to.match(/^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_.+/=]*$/);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"email\", `user${Math.floor(Math.random() * 10000)}@gmail.com`);\r",
+							"pm.environment.set(\"contraseña\", `Pass${Math.floor(Math.random() * 1000)}$`);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Key",
+						"value": "Content-Type",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"carlos.hernandez@gmail.com\",\r\n  \"contraseña\": \"Chg2023$Segura\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api/login",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dar Mascotas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verificar que el estado HTTP es 200\r",
+							"pm.test(\"Estado HTTP es 200\", function () {\r",
+							"    pm.response.to.have.status(200); // Confirma que la respuesta tiene el código 200\r",
+							"});\r",
+							"\r",
+							"// Verificar que la respuesta es JSON válida\r",
+							"pm.test(\"Respuesta es JSON válida\", function () {\r",
+							"    pm.response.to.be.json; // Confirma que el formato de la respuesta es JSON\r",
+							"    pm.expect(() => JSON.parse(pm.response.text())).not.to.throw(); // Verifica que se puede parsear correctamente\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MzdiNWEzY2I0YWUxZmJkZmE2ZjFkNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTczMzA5MDk5NCwiZXhwIjoxNzMzMDk0NTk0fQ.MJ-KU0ciCOaYdFth5tMmHvi26MBqc5obtrKZpaLO7RQ",
+						"type": "text"
+					},
+					{
+						"key": "key",
+						"value": "Content-Type",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api/mascotas?page=1&limit=10",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"mascotas"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

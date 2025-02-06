@@ -1,7 +1,54 @@
+// registro.dart
 import 'package:flutter/material.dart';
 import 'profile_screen.dart'; // Importa la pantalla de perfil
+import '../services/api_service.dart'; // Asegúrate de importar tu ApiService
+import 'main.dart'; // Importa la pantalla de inicio de sesión
 
-class RegistroScreen extends StatelessWidget {
+class RegistroScreen extends StatefulWidget {
+  @override
+  _RegistroScreenState createState() => _RegistroScreenState();
+}
+
+class _RegistroScreenState extends State<RegistroScreen> {
+  final TextEditingController _nombreCompletoController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _roleController = TextEditingController(); // Para el rol
+  final ApiService _apiService = ApiService();
+
+  Future<void> _register() async {
+    if (_nombreCompletoController.text.isEmpty || 
+        _emailController.text.isEmpty || 
+        _passwordController.text.isEmpty || 
+        _roleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, completa todos los campos')),
+      );
+      return;
+    }
+
+    try {
+      await _apiService.register(
+        _nombreCompletoController.text,
+        _emailController.text,
+        _passwordController.text,
+        _roleController.text, // Asegúrate de que el rol sea un valor válido
+      );
+
+      // Navegar a la pantalla de inicio de sesión
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } catch (e) {
+      // Manejar el error
+      print('Error de registro: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de registro: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,7 +61,7 @@ class RegistroScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 50,
-                backgroundImage: AssetImage('assets/logo.png'), // Ajusta según tu logo
+                backgroundImage: AssetImage('assets/Logo_dogzline.png'), // Ajusta según tu logo
                 backgroundColor: Colors.transparent,
               ),
               SizedBox(height: 20),
@@ -27,41 +74,29 @@ class RegistroScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-              _buildTextField("Nombre Completo"),
-              _buildTextField("E-mail"),
-              _buildTextField("Contraseña", isPassword: true),
+              _buildTextField("Nombre Completo", _nombreCompletoController),
+              _buildTextField("E-mail", _emailController),
+              _buildTextField("Contraseña", _passwordController, isPassword: true),
+              _buildTextField("Role", _roleController), // Campo para el rol
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  // Navegar a ProfileScreen
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProfileScreen()),
-                  );
-                },
+                onPressed: _register,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFC4B08F), // Botón en tono beige
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  backgroundColor: Color(0xFFC4B08F), // Botón en tono marrón claro
+                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                 ),
-                child: Text(
-                  "Registrar",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
+                child: Text("Registrarse"),
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                  // Redirige a la pantalla de inicio de sesión
-                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
                 },
-                child: Text(
-                  "¿Ya tienes una cuenta? Iniciar sesión",
-                  style: TextStyle(color: Color(0xFF9B6A37)),
-                ),
-              )
+                child: Text("Ya tienes una cuenta? Inicia sesión"),
+              ),
             ],
           ),
         ),
@@ -69,21 +104,15 @@ class RegistroScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(String label, {bool isPassword = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: TextFormField(
-        obscureText: isPassword,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(color: Color(0xFF9B6A37)),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFF9B6A37)),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Color(0xFF9B6A37)),
-          ),
-        ),
+  Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.white,
       ),
     );
   }

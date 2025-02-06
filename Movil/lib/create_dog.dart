@@ -1,7 +1,11 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'services/api_service.dart';
+import 'models/data_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -28,20 +32,120 @@ class CreateDogPage extends StatefulWidget {
 
 class _CreateDogPageState extends State<CreateDogPage> {
   final ImagePicker _picker = ImagePicker();
-  List<XFile?> images = [];
+  List<File?> images = []; // Lista de File
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController colorController = TextEditingController();
   final TextEditingController breedController = TextEditingController();
   final List<String> selectedVaccines = [];
   final List<String> selectedCertificates = [];
+  final ApiService _apiService = ApiService();
+  String? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getString('userId');
+    });
+  }
 
   void pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      setState(() {
-        images.add(image);
-      });
+      try {
+        final File imageFile = File(image.path);
+
+        // Comprimir la imagen
+        final File? compressedImage = await compressImage(imageFile.path);
+
+        if (compressedImage != null) {
+          setState(() {
+            images.add(compressedImage);
+          });
+        }
+      } catch (e) {
+        print('Error procesando imagen: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al procesar la imagen: $e')),
+        );
+      }
+    }
+  }
+
+  Future<File?> compressImage(String imagePath) async {
+    try {
+      final XFile? compressedImagePath = await FlutterImageCompress.compressAndGetFile(
+        imagePath,
+        '${imagePath}_compressed.jpg',
+        minWidth: 800,
+        minHeight: 600,
+        quality: 80,
+      );
+
+      return compressedImagePath != null ? File(compressedImagePath.path) : null;
+    } catch (e) {
+      print('Error comprimiendo imagen: $e');
+      return null;
+    }
+  }
+
+  void _saveDog() async {
+    if (userId == null) {
+      print('Error: userId is null');
+      return;
+    }
+
+    // Convertir la primera imagen a base64 (si existe)
+    String fotoBase64 = '';
+    if (images.isNotEmpty && images[0] != null) {
+      List<int> imageBytes = await images[0]!.readAsBytes(); // Usar File directamente
+      fotoBase64 = 'data:image/png;base64,${base64Encode(imageBytes)}';
+    }
+
+    // Validaciones básicas
+    if (nameController.text.isEmpty ||
+        ageController.text.isEmpty ||
+        breedController.text.isEmpty ||
+        colorController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor completa todos los campos requeridos')),
+      );
+      return;
+    }
+
+    try {
+      final Data mascota = Data(
+        id: '',  // El servidor generará el ID
+        nombre: nameController.text,
+        edad: int.tryParse(ageController.text) ?? 0,
+        raza: breedController.text,
+        sexo: 'Macho',  // Deberías tener un selector para esto
+        color: colorController.text,
+        vacunas: selectedVaccines.join(', '), // Convertimos array a string
+        caracteristicas: 'Amigable',
+        certificado: selectedCertificates.join(', '), // Convertimos array a string
+        fotos: fotoBase64, // Una sola foto en base64
+        comportamiento: 'Juguetón',
+        idUsuario: userId!,
+      );
+
+      print('Intentando crear mascota con datos: ${mascota.toJson()}');
+      await _apiService.createMascota(mascota);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mascota creada exitosamente')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      print('Error al crear la mascota: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al crear la mascota')),
+      );
     }
   }
 
@@ -86,9 +190,7 @@ class _CreateDogPageState extends State<CreateDogPage> {
                       border: Border.all(color: Colors.grey),
                       image: images.length > index
                           ? DecorationImage(
-                              image: FileImage(
-                                File(images[index]!.path),
-                              ),
+                              image: FileImage(images[index]!),
                               fit: BoxFit.cover,
                             )
                           : null,
@@ -116,10 +218,9 @@ class _CreateDogPageState extends State<CreateDogPage> {
               options: ['Pedigrí', 'Adiestramiento'],
               selectedOptions: selectedCertificates,
             ),
+            const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                _showSummaryDialog();
-              },
+              onPressed: _saveDog,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD6A66E),
                 shape: RoundedRectangleBorder(
@@ -170,35 +271,6 @@ class _CreateDogPageState extends State<CreateDogPage> {
         ),
         const SizedBox(height: 16),
       ],
-    );
-  }
-
-  void _showSummaryDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Resumen del perro'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Nombre: ${nameController.text}'),
-            Text('Edad: ${ageController.text}'),
-            Text('Color: ${colorController.text}'),
-            Text('Raza: ${breedController.text}'),
-            Text('Vacunas: ${selectedVaccines.join(", ")}'),
-            Text('Certificados: ${selectedCertificates.join(", ")}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Cerrar'),
-          ),
-        ],
-      ),
     );
   }
 }

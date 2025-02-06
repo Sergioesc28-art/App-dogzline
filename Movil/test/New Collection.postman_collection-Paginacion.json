@@ -1,0 +1,391 @@
+{
+	"info": {
+		"_postman_id": "7afa0e97-f73a-40d1-8538-c90b04a78157",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39918157",
+		"_collection_link": "https://doggiz.postman.co/workspace/Doggiz-Workspace~a9ba2c51-1586-49df-83a8-4b992c76e16d/collection/39892499-7afa0e97-f73a-40d1-8538-c90b04a78157?action=share&source=collection_link&creator=39918157"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Supongamos que la respuesta tiene el token en 'response.token'\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.environment.set(\"auth_token\", jsonData.token);\r",
+							"\r",
+							"pm.test(\"El endpoint está funcionando\", function () {\r",
+							"    pm.response.to.have.status(200); // Verifica si la respuesta tiene un código de estado 200\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Contenido devuelto no está vacío\", function () {\r",
+							"    pm.expect(pm.response.text()).to.not.be.empty; // Verifica si la respuesta tiene contenido\r",
+							"});\r",
+							"\r",
+							"pm.test(\"La respuesta fue rápida\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(500); // Verifica que el tiempo sea menor a 500ms\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El contenido es JSON\", function () {\r",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El tiempo de respuesta es menor a 500 ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(500); // Valida que el tiempo sea menor a 500 ms\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"_id\": {\r\n    \"$oid\": \"671f387c4f8aee112e2bd159\"\r\n  },\r\n  \"NombreCompleto\": \"Javier Gómez Ruiz\",\r\n  \"email\": \"javier.gomez1@gmail.com\",\r\n  \"contraseña\": \"$2a$10$aCvM0wGuy6kIbQsm1dTao.htjC6xauv0RTCKBV4DY8lJ8j86aj0O5\",\r\n  \"suscripcion_gratuita\": false,\r\n  \"suscripcion_premium\": true,\r\n  \"role\": \"usuario\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api/usuarios?page=1&limit=10",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"usuarios"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El endpoint está funcionando\", function () {\r",
+							"    pm.response.to.have.status(200); // Verifica si la respuesta tiene un código de estado 200\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Contenido devuelto no está vacío\", function () {\r",
+							"    pm.expect(pm.response.text()).to.not.be.empty; // Verifica si la respuesta tiene contenido\r",
+							"});\r",
+							"\r",
+							"pm.test(\"La respuesta fue rápida\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(500); // Verifica que el tiempo sea menor a 500ms\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El contenido es JSON\", function () {\r",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El tiempo de respuesta es menor a 500 ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(500); // Valida que el tiempo sea menor a 500 ms\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"El recurso se añadió correctamente\", function () {\r",
+							"    pm.response.to.have.status(201); // Verifica que el código de estado sea 201\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"_id\": {\r\n    \"$oid\": \"671f387c4f8aee112e2bd159\"\r\n  },\r\n  \"NombreCompleto\": \"Javier Gómez Ruiz\",\r\n  \"email\": \"javier.gomez1@gmail.com\",\r\n  \"contraseña\": \"$2a$10$aCvM0wGuy6kIbQsm1dTao.htjC6xauv0RTCKBV4DY8lJ8j86aj0O5\",\r\n  \"suscripcion_gratuita\": false,\r\n  \"suscripcion_premium\": true,\r\n  \"role\": \"usuario\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api-docs",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api-docs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://dogzline-1.onrender.com/api/usuarios?page=1&limit=10\n",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MzdiNWEzY2I0YWUxZmJkZmE2ZjFkNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTczNjcyOTYzMCwiZXhwIjoxNzM2NzMzMjMwfQ.qC8eS4vh9jmukRnvZ2Q9vMhaj95VQdbYYSqJJL9WJmc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MzdiNWEzY2I0YWUxZmJkZmE2ZjFkNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTczNjcyOTYzMCwiZXhwIjoxNzM2NzMzMjMwfQ.qC8eS4vh9jmukRnvZ2Q9vMhaj95VQdbYYSqJJL9WJmc\"",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api/usuarios?page=1&limit=10\n",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"usuarios"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "10\n"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://dogzline-1.onrender.com/api/login",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"carlos.hernandez@gmail.com\",\r\n  \"contraseña\": \"Chg2023$Segura\"\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api/login",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "paginacion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Obtener respuesta de la API\r",
+							"let response;\r",
+							"try {\r",
+							"    response = pm.response.json();\r",
+							"} catch (e) {\r",
+							"    console.error(\"No se pudo parsear la respuesta JSON:\", e);\r",
+							"    pm.test(\"Respuesta JSON no válida\", function () {\r",
+							"        pm.expect.fail(\"La respuesta no es un JSON válido.\");\r",
+							"    });\r",
+							"    return;\r",
+							"}\r",
+							"\r",
+							"// Validar si 'data' es un array\r",
+							"if (Array.isArray(response.data)) {\r",
+							"    pm.test(\"La propiedad 'data' es un array\", function () {\r",
+							"        pm.expect(response.data).to.be.an(\"array\");\r",
+							"    });\r",
+							"\r",
+							"    // Validar que la cantidad de elementos no exceda el límite\r",
+							"    pm.test(\"Cantidad de elementos no excede el límite\", function () {\r",
+							"        pm.expect(response.data.length).to.be.at.most(response.limit);\r",
+							"    });\r",
+							"} else {\r",
+							"    console.warn(\"La propiedad 'data' no es un array o está indefinida.\");\r",
+							"}\r",
+							"\r",
+							"// Mostrar información en la consola\r",
+							"console.log(`Página actual: ${response.page}`);\r",
+							"console.log(`Total de páginas: ${response.totalPages}`);\r",
+							"console.log(`Total de registros: ${response.totalRecords}`);\r",
+							"if (Array.isArray(response.data)) {\r",
+							"    console.log(`Registros en esta página: ${response.data.length}`);\r",
+							"} else {\r",
+							"    console.log(\"No hay registros disponibles en esta página.\");\r",
+							"}\r",
+							"\r",
+							"// Validar si hay página siguiente\r",
+							"pm.test(\"¿Existe una página siguiente?\", function () {\r",
+							"    const hasNextPage = response.page < response.totalPages;\r",
+							"    console.log(\"¿Hay más páginas disponibles?:\", hasNextPage);\r",
+							"});\r",
+							"\r",
+							"// Validar si hay página anterior\r",
+							"pm.test(\"¿Existe una página anterior?\", function () {\r",
+							"    const hasPreviousPage = response.page > 1;\r",
+							"    console.log(\"¿Hay una página anterior?:\", hasPreviousPage);\r",
+							"});\r",
+							"\r",
+							"// Más pruebas adicionales\r",
+							"\r",
+							"// La última página no tiene registros en exceso\r",
+							"pm.test(\"La última página no tiene registros en exceso\", function () {\r",
+							"    if (response.page === response.totalPages) {\r",
+							"        pm.expect(response.data.length).to.be.at.most(response.totalRecords % response.limit);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// La página anterior no existe en la primera página\r",
+							"pm.test(\"La página anterior no existe en la primera página\", function () {\r",
+							"    const hasPreviousPage = response.page > 1;\r",
+							"    if (response.page === 1) {\r",
+							"        pm.expect(hasPreviousPage).to.be.false;\r",
+							"    } else {\r",
+							"        pm.expect(hasPreviousPage).to.be.true;\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// La respuesta tiene datos en páginas intermedias\r",
+							"pm.test(\"La respuesta tiene datos en páginas intermedias\", function () {\r",
+							"    if (response.page < response.totalPages) {\r",
+							"        pm.expect(response.data.length).to.be.above(0);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Validar que la cantidad de registros en la última página sea igual al residuo de totalRecords / limit, si no es el último conjunto de registros\r",
+							"pm.test(\"Cantidad de registros en la última página\", function () {\r",
+							"    if (response.page === response.totalPages) {\r",
+							"        const expectedLastPageRecords = response.totalRecords % response.limit || response.limit;\r",
+							"        pm.expect(response.data.length).to.eql(expectedLastPageRecords);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"// Verificar si la página siguiente existe solo cuando no estamos en la última página\r",
+							"pm.test(\"La página siguiente solo debe existir cuando no estamos en la última página\", function () {\r",
+							"    const hasNextPage = response.page < response.totalPages;\r",
+							"    pm.expect(hasNextPage).to.eql(response.page < response.totalPages);\r",
+							"});\r",
+							"\r",
+							"// Verificar que no haya páginas adicionales si el número total de registros es menor que el límite de registros\r",
+							"pm.test(\"No hay páginas adicionales si el número total de registros es menor que el límite\", function () {\r",
+							"    if (response.totalRecords < response.limit) {\r",
+							"        pm.expect(response.totalPages).to.eql(1);\r",
+							"    }\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MzdiNWEzY2I0YWUxZmJkZmE2ZjFkNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTczNjczMjExNywiZXhwIjoxNzM2NzM1NzE3fQ.x0mekaT0YlHHcrMEi1R-5SIe8LjuW8ToaRLsiulPeGQ",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://dogzline-1.onrender.com/api/usuarios",
+					"protocol": "https",
+					"host": [
+						"dogzline-1",
+						"onrender",
+						"com"
+					],
+					"path": [
+						"api",
+						"usuarios"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

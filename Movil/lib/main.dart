@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'profile_screen.dart'; // Importa el ProfileScreen
 import 'registro.dart'; // Importa el RegistroScreen
+import 'package:shared_preferences/shared_preferences.dart';
+import 'services/api_service.dart';
+import 'package:jwt_decoder/jwt_decoder.dart'; // Importa jwt_decoder
 
 void main() {
   runApp(MyApp());
@@ -16,10 +19,55 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final ApiService _apiService = ApiService();
+
+  Future<void> _login() async {
+    try {
+      final response = await _apiService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      // Extraer el token de la respuesta JSON
+      final token = response['token'];
+      if (token == null) {
+        throw Exception('Token no encontrado en la respuesta');
+      }
+
+      // Decodificar el token JWT para extraer el userId
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      final userId = decodedToken['id']; // Asegúrate de que el campo coincida con el JSON decodificado
+
+      // Almacenar el userId y el token en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', userId);
+      await prefs.setString('token', token);
+
+      // Navegar a la pantalla de perfil
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ProfileScreen()),
+      );
+    } catch (e) {
+      print('Error de inicio de sesión: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error de inicio de sesión')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F2DE), // Fondo beige
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -54,7 +102,6 @@ class LoginPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               // Login Card
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -83,6 +130,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     SizedBox(height: 20),
                     TextField(
+                      controller: _emailController,
                       decoration: InputDecoration(
                         labelText: 'E-mail',
                         border: UnderlineInputBorder(),
@@ -90,6 +138,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     SizedBox(height: 20),
                     TextField(
+                      controller: _passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         labelText: 'Contraseña',
@@ -98,12 +147,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ProfileScreen()),
-                        );
-                      },
+                      onPressed: _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey[300],
                         foregroundColor: Colors.black,
@@ -120,7 +164,6 @@ class LoginPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               // Register Option
               Padding(
                 padding: const EdgeInsets.only(top: 20),
@@ -152,7 +195,6 @@ class LoginPage extends StatelessWidget {
           ),
         ),
       ),
-      backgroundColor: Color(0xFFF9F6E8),
     );
   }
 }

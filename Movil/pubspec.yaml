@@ -10,6 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dio: ^5.0.0 # Asegúrate de que ya tienes Dio
+  shared_preferences: ^2.0.0
+  jwt_decoder: ^2.0.1
+  flutter_image_compress: ^2.4.0 # Asegúrate de usar la última versión
 
   # Iconos estilo Cupertino para compatibilidad con iOS
   cupertino_icons: ^1.0.8
