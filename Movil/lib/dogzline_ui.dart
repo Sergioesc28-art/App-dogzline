@@ -1,8 +1,80 @@
 import 'package:flutter/material.dart';
-import 'profile_screen.dart'; // Importa el ProfileScreen
-import 'perfil_perro.dart'; // Importa el DogDetailScreen
+import 'services/api_service.dart';
+import 'models/data_model.dart';
 
-class DogzlineScreen extends StatelessWidget {
+class DogzlineScreen extends StatefulWidget {
+  final String selectedDogName;
+
+  const DogzlineScreen({required this.selectedDogName});
+
+  @override
+  _DogzlineScreenState createState() => _DogzlineScreenState();
+}
+
+class _DogzlineScreenState extends State<DogzlineScreen> {
+  final ApiService _apiService = ApiService();
+  List<Data> dogs = [];
+  List<Data> filteredDogs = [];
+  TextEditingController searchController = TextEditingController();
+  ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
+  bool _isLoading = false;
+  bool _hasMoreData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDogs();
+    searchController.addListener(_filterDogs);
+    _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _fetchDogs({int page = 1}) async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final response = await _apiService.getDogs(page: page, limit: 10);
+      setState(() {
+        if (response.isEmpty) {
+          _hasMoreData = false;
+        } else {
+          dogs.addAll(response);
+          filteredDogs = dogs;
+          _currentPage++;
+        }
+      });
+    } catch (error) {
+      print('Error fetching dogs: $error');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _filterDogs() {
+    setState(() {
+      filteredDogs = dogs.where((dog) {
+        return dog.nombre.toLowerCase().contains(searchController.text.toLowerCase());
+      }).toList();
+    });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent && _hasMoreData) {
+      _fetchDogs(page: _currentPage);
+    }
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,10 +83,7 @@ class DogzlineScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
+            Navigator.pop(context);
           },
         ),
         title: Text('Dogzline', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.brown)),
@@ -33,10 +102,11 @@ class DogzlineScreen extends StatelessWidget {
             backgroundImage: AssetImage('assets/chucho.jpg'),
           ),
           SizedBox(height: 10),
-          Text('Chucho', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(widget.selectedDogName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: TextField(
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Busqueda',
                 prefixIcon: Icon(Icons.search),
@@ -52,39 +122,23 @@ class DogzlineScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: fetchDogsFromDatabase(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: filteredDogs.length + (_hasMoreData ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == filteredDogs.length) {
                   return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error al cargar los datos'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No hay perros disponibles'));
                 }
-                
-                final dogs = snapshot.data!;
-                return ListView.builder(
-                  itemCount: dogs.length,
-                  itemBuilder: (context, index) {
-                    final dog = dogs[index];
-                    return Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(dog['image']),
-                        ),
-                        title: Text(dog['name'], style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text('${dog['gender']}, ${dog['age']} años\n${dog['distance']} de distancia'),
-                        trailing: Icon(Icons.location_on, color: Colors.orange),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => DogDetailScreen(dog: dog)),
-                          );
-                        },
-                      ),
-                    );
-                  },
+                final dog = filteredDogs[index];
+                return Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(dog.fotos),
+                    ),
+                    title: Text(dog.nombre, style: TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${dog.sexo}, ${dog.edad} años\n${dog.distancia} de distancia'),
+                    trailing: Icon(Icons.location_on, color: Colors.orange),
+                  ),
                 );
               },
             ),
@@ -92,16 +146,5 @@ class DogzlineScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<List<Map<String, dynamic>>> fetchDogsFromDatabase() async {
-    // Simulación de datos desde la base de datos
-    await Future.delayed(Duration(seconds: 2));
-    return [
-      {'name': 'Oliver', 'gender': 'Macho', 'age': 2, 'distance': '0.9 Km', 'image': 'https://example.com/oliver.jpg'},
-      {'name': 'Bobby', 'gender': 'Macho', 'age': 6, 'distance': '2.6 Km', 'image': 'https://example.com/bobby.jpg'},
-      {'name': 'Bella', 'gender': 'Hembra', 'age': 12, 'distance': '5.9 Km', 'image': 'https://example.com/bella.jpg'},
-      {'name': 'Firulais', 'gender': 'Macho', 'age': 8, 'distance': '10 Km', 'image': 'https://example.com/firulais.jpg'},
-    ];
   }
 }

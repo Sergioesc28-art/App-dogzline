@@ -113,4 +113,38 @@ class ApiService {
       throw Exception('Error al obtener las mascotas: $e');
     }
   }
+    Future<List<Data>> getDogs({int page = 1, int limit = 10}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.get(
+        'https://dogzline-1.onrender.com/api/mascotas',
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        List<Data> dogs = (response.data['mascotas'] as List)
+            .map((json) => Data.fromJson(json))
+            .toList();
+        return dogs;
+      } else {
+        throw Exception('Error al obtener las mascotas');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener las mascotas: $e');
+    }
+  } 
 }

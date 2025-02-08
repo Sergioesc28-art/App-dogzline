@@ -1,4 +1,3 @@
-// data_model.dart
 class User {
   final String token; // Token para autenticación
 
@@ -26,6 +25,7 @@ class Data {
   final String fotos;        // Cambiado a String para coincidir con el backend
   final String comportamiento; // Nota: en el backend es 'Comportamiento' con mayúscula
   final String idUsuario;
+  final String distancia; // Agregado para coincidir con el uso en dogzline_ui.dart
 
   Data({
     required this.id,
@@ -40,6 +40,7 @@ class Data {
     required this.fotos,
     required this.comportamiento,
     required this.idUsuario,
+    required this.distancia, // Agregado para coincidir con el uso en dogzline_ui.dart
   });
 
   factory Data.fromJson(Map<String, dynamic> json) {
@@ -56,22 +57,24 @@ class Data {
       fotos: json['fotos'] ?? '',
       comportamiento: json['Comportamiento'] ?? '', // Nota la mayúscula
       idUsuario: json['id_usuario'] ?? '',
+      distancia: json['distancia'] ?? '', // Agregado para coincidir con el uso en dogzline_ui.dart
     );
   }
 
- Map<String, dynamic> toJson() {
-  return {
-    'nombre': nombre,
-    'edad': edad,
-    'raza': raza,
-    'sexo': sexo,
-    'color': color,
-    'vacunas': vacunas,
-    'caracteristicas': caracteristicas,
-    'certificado': certificado,
-    'fotos': fotos,
-    'Comportamiento': comportamiento, // Asegúrate de que sea con mayúscula
-    'id_usuario': idUsuario,
-  };
-}
+  Map<String, dynamic> toJson() {
+    return {
+      'nombre': nombre,
+      'edad': edad,
+      'raza': raza,
+      'sexo': sexo,
+      'color': color,
+      'vacunas': vacunas,
+      'caracteristicas': caracteristicas,
+      'certificado': certificado,
+      'fotos': fotos,
+      'Comportamiento': comportamiento, // Asegúrate de que sea con mayúscula
+      'id_usuario': idUsuario,
+      'distancia': distancia, // Agregado para coincidir con el uso en dogzline_ui.dart
+    };
+  }
 }

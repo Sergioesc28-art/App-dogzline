@@ -133,6 +133,7 @@ class _CreateDogPageState extends State<CreateDogPage> {
         fotos: fotoBase64, // Una sola foto en base64
         comportamiento: 'Juguetón',
         idUsuario: userId!,
+        distancia: '', // No se usa en la creación
       );
 
       print('Intentando crear mascota con datos: ${mascota.toJson()}');
