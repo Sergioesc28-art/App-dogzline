@@ -75,8 +75,11 @@ class _RegistroScreenState extends State<RegistroScreen> {
               ),
               SizedBox(height: 20),
               _buildTextField("Nombre Completo", _nombreCompletoController),
+              SizedBox(height: 10),
               _buildTextField("E-mail", _emailController),
+              SizedBox(height: 10),
               _buildTextField("Contraseña", _passwordController, isPassword: true),
+              SizedBox(height: 10),
               _buildTextField("Role", _roleController), // Campo para el rol
               SizedBox(height: 20),
               ElevatedButton(
