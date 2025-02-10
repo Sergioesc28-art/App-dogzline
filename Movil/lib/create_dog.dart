@@ -65,6 +65,8 @@ class _CreateDogPageState extends State<CreateDogPage> {
         final File? compressedImage = await compressImage(imageFile.path);
 
         if (compressedImage != null) {
+          print(
+              'Tamaño de la imagen comprimida: ${compressedImage.lengthSync()} bytes');
           setState(() {
             images.add(compressedImage);
           });
@@ -80,15 +82,18 @@ class _CreateDogPageState extends State<CreateDogPage> {
 
   Future<File?> compressImage(String imagePath) async {
     try {
-      final XFile? compressedImagePath = await FlutterImageCompress.compressAndGetFile(
+      final XFile? compressedImagePath =
+          await FlutterImageCompress.compressAndGetFile(
         imagePath,
         '${imagePath}_compressed.jpg',
-        minWidth: 800,
-        minHeight: 600,
-        quality: 80,
+        minWidth: 600, // Reducir el ancho mínimo
+        minHeight: 400, // Reducir la altura mínima
+        quality: 30, // Reducir la calidad a 30
       );
 
-      return compressedImagePath != null ? File(compressedImagePath.path) : null;
+      return compressedImagePath != null
+          ? File(compressedImagePath.path)
+          : null;
     } catch (e) {
       print('Error comprimiendo imagen: $e');
       return null;
@@ -104,7 +109,8 @@ class _CreateDogPageState extends State<CreateDogPage> {
     // Convertir la primera imagen a base64 (si existe)
     String fotoBase64 = '';
     if (images.isNotEmpty && images[0] != null) {
-      List<int> imageBytes = await images[0]!.readAsBytes(); // Usar File directamente
+      List<int> imageBytes =
+          await images[0]!.readAsBytes(); // Usar File directamente
       fotoBase64 = 'data:image/png;base64,${base64Encode(imageBytes)}';
     }
 
@@ -114,22 +120,24 @@ class _CreateDogPageState extends State<CreateDogPage> {
         breedController.text.isEmpty ||
         colorController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor completa todos los campos requeridos')),
+        const SnackBar(
+            content: Text('Por favor completa todos los campos requeridos')),
       );
       return;
     }
 
     try {
       final Data mascota = Data(
-        id: '',  // El servidor generará el ID
+        id: '', // El servidor generará el ID
         nombre: nameController.text,
         edad: int.tryParse(ageController.text) ?? 0,
         raza: breedController.text,
-        sexo: 'Macho',  // Deberías tener un selector para esto
+        sexo: 'Macho', // Deberías tener un selector para esto
         color: colorController.text,
         vacunas: selectedVaccines.join(', '), // Convertimos array a string
         caracteristicas: 'Amigable',
-        certificado: selectedCertificates.join(', '), // Convertimos array a string
+        certificado:
+            selectedCertificates.join(', '), // Convertimos array a string
         fotos: fotoBase64, // Una sola foto en base64
         comportamiento: 'Juguetón',
         idUsuario: userId!,
@@ -280,7 +288,9 @@ class CustomTextField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
 
-  const CustomTextField({Key? key, required this.label, required this.controller}) : super(key: key);
+  const CustomTextField(
+      {Key? key, required this.label, required this.controller})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
