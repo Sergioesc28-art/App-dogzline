@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile_screen.dart'; // Importa el ProfileScreen
+import 'main.dart'; // Importa el LoginPage
+import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
 
 void main() {
   runApp(MyApp());
@@ -96,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Spacer(),
             Center(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: _logout,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.brown, // Changed from 'primary' to 'backgroundColor'
                   shape: RoundedRectangleBorder(
@@ -115,6 +117,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Eliminar todos los datos de sesión
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()), // Redirigir a la pantalla de inicio de sesión
     );
   }
 

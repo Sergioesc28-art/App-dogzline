@@ -284,7 +284,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => DogzlineScreen()),
+                                    MaterialPageRoute(builder: (context) => DogzlineScreen(selectedDogName: mascota.nombre)),
                                   );
                                 },
                                 child: Column(
