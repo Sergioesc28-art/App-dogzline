@@ -14,22 +14,16 @@ dependencies:
   shared_preferences: ^2.0.0
   jwt_decoder: ^2.0.1
   flutter_image_compress: ^2.4.0 # Asegúrate de usar la última versión
-
-  # Iconos estilo Cupertino para compatibilidad con iOS
-  cupertino_icons: ^1.0.8
-
-  # Iconos FontAwesome para Flutter
-  font_awesome_flutter: ^10.1.0
-
-  # Paquete para seleccionar imágenes
-  image_picker: ^0.8.4+3
+  cupertino_icons: ^1.0.8 # Iconos estilo Cupertino para compatibilidad con iOS
+  font_awesome_flutter: ^10.1.0 # Iconos FontAwesome para Flutter
+  image_picker: ^0.8.4+3 # Paquete para seleccionar imágenes
+  swipe_cards: ^2.0.0+1 # Paquete para la funcionalidad de swipe
+  google_fonts: ^4.0.0 # Paquete para usar Google Fonts en Flutter
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # Buenas prácticas y recomendaciones de linting
-  flutter_lints: ^5.0.0
+  flutter_lints: ^5.0.0 # Buenas prácticas y recomendaciones de linting
 
 flutter:
   uses-material-design: true # Habilita el uso de Material Icons

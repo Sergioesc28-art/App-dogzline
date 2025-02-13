@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/dogzline/Movil/linux"
+    "cmake.sourceDirectory": "C:/dogzline/Movil/linux",
+    "editor.wordBasedSuggestions": "matchingDocuments"
 }

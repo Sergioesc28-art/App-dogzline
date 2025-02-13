@@ -8,6 +8,7 @@ import 'dogzline_ui.dart'; // Importa el DogzlineScreen
 import 'services/api_service.dart'; // Importa el ApiService
 import 'models/data_model.dart'; // Importa el modelo de datos
 import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
+import 'swipe.dart'; // Importa el MatchScreen
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -284,7 +285,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => DogzlineScreen(selectedDogName: mascota.nombre)),
+                                    MaterialPageRoute(builder: (context) => MatchScreen()),
                                   );
                                 },
                                 child: Column(
