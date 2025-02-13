@@ -113,6 +113,7 @@ class ApiService {
       throw Exception('Error al obtener las mascotas: $e');
     }
   }
+  // Método para obtener todas las mascotas
     Future<List<Data>> getDogs({int page = 1, int limit = 10}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
