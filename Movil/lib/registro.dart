@@ -1,4 +1,3 @@
-// registro.dart
 import 'package:flutter/material.dart';
 import 'profile_screen.dart'; // Importa la pantalla de perfil
 import '../services/api_service.dart'; // Asegúrate de importar tu ApiService
@@ -13,14 +12,13 @@ class _RegistroScreenState extends State<RegistroScreen> {
   final TextEditingController _nombreCompletoController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _roleController = TextEditingController(); // Para el rol
   final ApiService _apiService = ApiService();
+  bool _obscureText = true;
 
   Future<void> _register() async {
     if (_nombreCompletoController.text.isEmpty || 
         _emailController.text.isEmpty || 
-        _passwordController.text.isEmpty || 
-        _roleController.text.isEmpty) {
+        _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, completa todos los campos')),
       );
@@ -32,7 +30,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
         _nombreCompletoController.text,
         _emailController.text,
         _passwordController.text,
-        _roleController.text, // Asegúrate de que el rol sea un valor válido
+        'usuario', // Establecer el rol como "usuario" por defecto
       );
 
       // Navegar a la pantalla de inicio de sesión
@@ -79,8 +77,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
               _buildTextField("E-mail", _emailController),
               SizedBox(height: 10),
               _buildTextField("Contraseña", _passwordController, isPassword: true),
-              SizedBox(height: 10),
-              _buildTextField("Role", _roleController), // Campo para el rol
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _register,
@@ -110,12 +106,24 @@ class _RegistroScreenState extends State<RegistroScreen> {
   Widget _buildTextField(String label, TextEditingController controller, {bool isPassword = false}) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: isPassword ? _obscureText : false,
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(),
         filled: true,
         fillColor: Colors.white,
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  _obscureText ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureText = !_obscureText;
+                  });
+                },
+              )
+            : null,
       ),
     );
   }

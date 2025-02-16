@@ -227,6 +227,11 @@ class _CreateDogPageState extends State<CreateDogPage> {
               options: ['Pedigrí', 'Adiestramiento'],
               selectedOptions: selectedCertificates,
             ),
+            _buildMultiSelectField(
+              label: 'Sexo',
+              options: ['Macho', 'Hembra'],
+              selectedOptions: selectedCertificates,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _saveDog,

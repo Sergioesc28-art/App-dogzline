@@ -3,6 +3,10 @@ import 'package:swipe_cards/swipe_cards.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert'; // Importa dart:convert para usar base64Decode
+import 'dart:typed_data'; // Importa dart:typed_data para usar Uint8List
+import 'models/data_model.dart';
+import 'services/api_service.dart';
 
 void main() {
   runApp(DogzlineApp());
@@ -33,6 +37,7 @@ class _MatchScreenState extends State<MatchScreen> {
   String _actionText = "";
   Color _actionColor = Colors.transparent;
   double _opacity = 0.0;
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -40,46 +45,7 @@ class _MatchScreenState extends State<MatchScreen> {
     _initializeCards();
   }
 
-  Future<List<Map<String, dynamic>>> generateDogs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      if (token == null) {
-        throw Exception('Token no encontrado');
-      }
-
-      final response = await Dio().get(
-        'https://dogzline-1.onrender.com/api/mascotas',
-        queryParameters: {
-          'page': 1,
-          'limit': 10,
-        },
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        List<Map<String, dynamic>> dogs = (response.data['mascotas'] as List)
-            .map((json) => {
-                  "name": json['name'],
-                  "age": "${json['age']} años",
-                  "image": json['image'],
-                })
-            .toList();
-        return dogs;
-      } else {
-        throw Exception('Error al obtener las mascotas');
-      }
-    } catch (e) {
-      throw Exception('Error al obtener las mascotas: $e');
-    }
-  }
-
-  void _initializeCards() async {
+  Future<void> _initializeCards() async {
     List<Map<String, dynamic>> dogs = await generateDogs();
     _swipeItems = dogs.map((profile) {
       return SwipeItem(
@@ -89,8 +55,26 @@ class _MatchScreenState extends State<MatchScreen> {
       );
     }).toList();
 
-    _matchEngine = MatchEngine(swipeItems: _swipeItems);
-    setState(() {});
+    setState(() {
+      _matchEngine = MatchEngine(swipeItems: _swipeItems);
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> generateDogs() async {
+    try {
+      List<Data> dogs = await _apiService.getDogs(page: 1, limit: 10);
+      return dogs.map((dog) {
+        String base64Image = dog.fotos.split(',').last;
+        return {
+          'image': base64Image,
+          'name': dog.nombre,
+          'age': dog.edad.toString(),
+        };
+      }).toList();
+    } catch (e) {
+      print('Error fetching dogs: $e');
+      return [];
+    }
   }
 
   void _showAction(String action, Color color) {
@@ -110,12 +94,21 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Widget buildProfileCard(Map<String, dynamic> profile) {
+    Uint8List? imageBytes;
+    try {
+      imageBytes = base64Decode(profile['image'] ?? '');
+    } catch (e) {
+      print('Error decoding base64 image: $e');
+    }
+
     return Card(
       child: Column(
         children: [
-          Image.network(profile['image']),
-          Text(profile['name']),
-          Text(profile['age']),
+          imageBytes != null
+              ? Image.memory(imageBytes)
+              : Text('Imagen no disponible'),
+          Text(profile['name'] ?? 'Nombre no disponible'),
+          Text(profile['age'] ?? 'Edad no disponible'),
         ],
       ),
     );
@@ -151,18 +144,20 @@ class _MatchScreenState extends State<MatchScreen> {
           Column(
             children: [
               Expanded(
-                child: SwipeCards(
-                  matchEngine: _matchEngine,
-                  itemBuilder: (context, index) {
-                    final profile = _swipeItems[index].content;
-                    return buildProfileCard(profile);
-                  },
-                  onStackFinished: () {
-                    setState(() {
-                      _initializeCards();
-                    });
-                  },
-                ),
+                child: _swipeItems.isEmpty
+                    ? Center(child: CircularProgressIndicator())
+                    : SwipeCards(
+                        matchEngine: _matchEngine,
+                        itemBuilder: (context, index) {
+                          final profile = _swipeItems[index].content;
+                          return buildProfileCard(profile);
+                        },
+                        onStackFinished: () {
+                          setState(() {
+                            _initializeCards();
+                          });
+                        },
+                      ),
               ),
               buildActionButtons(),
             ],

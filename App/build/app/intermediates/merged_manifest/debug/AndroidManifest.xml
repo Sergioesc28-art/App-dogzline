@@ -49,7 +49,9 @@
             android:launchMode="singleTop"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
-            android:windowSoftInputMode="adjustResize" >
+            android:windowSoftInputMode="adjustResize" 
+              android:enableOnBackInvokedCallback="true"
+              >
 
             <!--
                  Specifies an Android theme to apply to this Activity as soon as

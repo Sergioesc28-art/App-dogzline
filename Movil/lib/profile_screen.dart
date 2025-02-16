@@ -9,6 +9,7 @@ import 'services/api_service.dart'; // Importa el ApiService
 import 'models/data_model.dart'; // Importa el modelo de datos
 import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
 import 'swipe.dart'; // Importa el MatchScreen
+import 'dart:convert'; // Importa dart:convert para decodificar base64
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -55,6 +56,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         selectedItemColor: Colors.brown[700],
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateDogPage()),
+          );
+        },
+        backgroundColor: Colors.brown[700],
+        child: Icon(Icons.add),
       ),
       backgroundColor: Color(0xFFF9F6E8),
     );
@@ -277,50 +288,52 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                   SizedBox(height: 10),
                   _isLoading
                       ? Center(child: CircularProgressIndicator())
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            ..._mascotas.map((mascota) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => MatchScreen()),
+                      : _mascotas.isEmpty
+                          ? Center(child: Text('No hay perros registrados.'))
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                ..._mascotas.map((mascota) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => MatchScreen()),
+                                      );
+                                    },
+                                    child: Column(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 30,
+                                          backgroundImage: MemoryImage(base64Decode(mascota.fotos.split(',').last)),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(mascota.nombre ?? ''),
+                                      ],
+                                    ),
                                   );
-                                },
-                                child: Column(
+                                }).toList(),
+                                Column(
                                   children: [
-                                    CircleAvatar(
-                                      radius: 30,
-                                      backgroundImage: NetworkImage(mascota.fotos),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => const CreateDogPage()),
+                                        );
+                                      },
+                                      child: CircleAvatar(
+                                        radius: 30,
+                                        backgroundColor: Colors.brown[100],
+                                        child: Icon(Icons.add, color: Colors.brown[700]),
+                                      ),
                                     ),
                                     SizedBox(height: 8),
-                                    Text(mascota.nombre),
+                                    Text('Registrar'),
                                   ],
                                 ),
-                              );
-                            }).toList(),
-                            Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const CreateDogPage()),
-                                    );
-                                  },
-                                  child: CircleAvatar(
-                                    radius: 30,
-                                    backgroundColor: Colors.brown[100],
-                                    child: Icon(Icons.add, color: Colors.brown[700]),
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Text('Registrar'),
                               ],
                             ),
-                          ],
-                        ),
                 ],
               ),
             ),
