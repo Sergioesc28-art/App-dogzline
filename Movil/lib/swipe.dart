@@ -3,6 +3,7 @@ import 'package:swipe_cards/swipe_cards.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'matches_screen.dart';
 
 void main() {
   runApp(DogzlineApp());
@@ -153,7 +154,17 @@ class _MatchScreenState extends State<MatchScreen> {
     setState(() {
       _selectedIndex = index;
     });
-    // Aquí puedes agregar navegación a diferentes pantallas si lo deseas
+
+    if (index == 1) { // El índice del botón "Matches"
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) => MatchesScreen(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+    }
   }
 
   @override
