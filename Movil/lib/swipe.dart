@@ -7,6 +7,7 @@ import 'dart:convert'; // Importa dart:convert para usar base64Decode
 import 'dart:typed_data'; // Importa dart:typed_data para usar Uint8List
 import 'models/data_model.dart';
 import 'services/api_service.dart';
+import 'matches_screen.dart'; // Importa el archivo de matches
 
 void main() {
   runApp(DogzlineApp());
@@ -18,7 +19,7 @@ class DogzlineApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Colors.orange,
+        primaryColor: Colors.brown[700],
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       home: MatchScreen(),
@@ -102,13 +103,41 @@ class _MatchScreenState extends State<MatchScreen> {
     }
 
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      elevation: 5,
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          imageBytes != null
-              ? Image.memory(imageBytes)
-              : Text('Imagen no disponible'),
-          Text(profile['name'] ?? 'Nombre no disponible'),
-          Text(profile['age'] ?? 'Edad no disponible'),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              child: imageBytes != null
+                  ? Image.memory(
+                      imageBytes,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    )
+                  : Center(child: Text('Imagen no disponible')),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text(
+                  profile['name'] ?? 'Nombre no disponible',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown),
+                ),
+                Text(
+                  profile['age'] ?? 'Edad no disponible',
+                  style: TextStyle(fontSize: 16, color: Colors.brown.shade400),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -118,13 +147,15 @@ class _MatchScreenState extends State<MatchScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: () => _matchEngine.currentItem?.nope(),
-          child: Text("DISLIKE"),
+          icon: Icon(Icons.thumb_down, color: Colors.red),
+          label: Text("DISLIKE"),
         ),
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: () => _matchEngine.currentItem?.like(),
-          child: Text("LIKE"),
+          icon: Icon(Icons.thumb_up, color: Colors.green),
+          label: Text("LIKE"),
         ),
       ],
     );
@@ -136,7 +167,13 @@ class _MatchScreenState extends State<MatchScreen> {
       appBar: AppBar(
         title: Text("Dogzline", style: GoogleFonts.pacifico(fontSize: 28)),
         centerTitle: true,
-        backgroundColor: Colors.orange,
+        backgroundColor: Color(0xFF8B6F47), // Café bajo
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Stack(
         alignment: Alignment.center,
@@ -174,6 +211,40 @@ class _MatchScreenState extends State<MatchScreen> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: '',
+          ),
+        ],
+        selectedItemColor: Colors.brown[700],
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => MatchesScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return child; // Sin animación
+                },
+              ),
+            );
+          }
+        },
+        iconSize: 36, // Tamaño de los iconos
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
       ),
     );
   }

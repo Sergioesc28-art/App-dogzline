@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final ApiService _apiService = ApiService();
+  bool _isPasswordVisible = false;
 
   Future<void> _login() async {
     try {
@@ -139,10 +140,20 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(height: 20),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         labelText: 'Contraseña',
                         border: UnderlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     SizedBox(height: 20),

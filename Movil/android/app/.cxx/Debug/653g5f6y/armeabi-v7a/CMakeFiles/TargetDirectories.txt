@@ -1,0 +1,2 @@
+C:/Users/carlo/Desktop/dogzlineprueba/dogzline/Movil/android/app/.cxx/Debug/653g5f6y/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/carlo/Desktop/dogzlineprueba/dogzline/Movil/android/app/.cxx/Debug/653g5f6y/armeabi-v7a/CMakeFiles/rebuild_cache.dir

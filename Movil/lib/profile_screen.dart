@@ -64,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             MaterialPageRoute(builder: (context) => const CreateDogPage()),
           );
         },
-        backgroundColor: Colors.brown[700],
+        backgroundColor: Color(0xFF8B6F47), // Café bajo
         child: Icon(Icons.add),
       ),
       backgroundColor: Color(0xFFF9F6E8),
@@ -159,28 +159,13 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Perfil
+            // Mensaje de bienvenida
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: AssetImage('assets/user_profile.jpg'),
-                      ),
-                      Icon(
-                        Icons.verified,
-                        color: Colors.blue,
-                        size: 24,
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 10),
                   Text(
-                    _userName,
+                    'Bienvenido, $_userName',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -313,25 +298,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                     ),
                                   );
                                 }).toList(),
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) => const CreateDogPage()),
-                                        );
-                                      },
-                                      child: CircleAvatar(
-                                        radius: 30,
-                                        backgroundColor: Colors.brown[100],
-                                        child: Icon(Icons.add, color: Colors.brown[700]),
-                                      ),
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text('Registrar'),
-                                  ],
-                                ),
                               ],
                             ),
                 ],

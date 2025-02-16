@@ -1,65 +1,201 @@
 import 'package:flutter/material.dart';
+import 'swipe.dart'; // Importa la pantalla de MatchScreen (swipe)
 
-class MatchesScreen extends StatelessWidget {
+class MatchesScreen extends StatefulWidget {
+  @override
+  _MatchesScreenState createState() => _MatchesScreenState();
+}
+
+class _MatchesScreenState extends State<MatchesScreen> {
+  int _selectedIndex = 1; // Matches es el segundo ítem en la barra de navegación
+
+  void _onItemTapped(int index) {
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MatchScreen()),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
+  Widget _buildLikesSection() {
+    return Column(
+      children: [
+        SizedBox(height: 20),
+        Text(
+          'Asciende a Premium y descubre quién ya te dio Like',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.brown),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 20),
+        Center(
+          child: Container(
+            width: 150,
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+                SizedBox(height: 10),
+                Text('Nombre', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
+                Text('Edad', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
+              ],
+            ),
+          ),
+        ),
+        Spacer(),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF8B6F47), // Café bajo
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+            ),
+            child: Text(
+              'Descubre a quién le gustas',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFEFE6DD)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTopPicksSection() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildCategorySection('Actividad Reciente'),
+          _buildCategorySection('Intereses en Común'),
+          _buildCategorySection('Recomendado'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategorySection(String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            title,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown[700]),
+          ),
+        ),
+        Container(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 10, // Número de perfiles a mostrar
+            itemBuilder: (context, index) {
+              return _buildProfileCard();
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF8B6F47), // Café bajo
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+            ),
+            child: Text(
+              'Ver más',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFEFE6DD)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileCard() {
+    return Container(
+      width: 150,
+      margin: EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+          SizedBox(height: 10),
+          Text('Nombre', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
+          Text('Edad', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFEFE6DD), // Beige
-      appBar: AppBar(
-        backgroundColor: Color(0xFF8B6F47), // Café bajo
-        title: Text(
-          'Dogzlime',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Color(0xFFEFE6DD), // Beige
+        appBar: AppBar(
+          backgroundColor: Color(0xFF8B6F47), // Café bajo
+          title: Text(
+            'Dogzline',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+          ),
+          centerTitle: true,
+          bottom: TabBar(
+            tabs: [
+              Tab(text: 'Likes'),
+              Tab(text: 'Top Picks'),
+            ],
+          ),
         ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          SizedBox(height: 20),
-          Text(
-            'Asciende a Premium y descubre quién ya te dio Like',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.brown),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 20),
-          Center(
-            child: Container(
-              width: 150,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
-                  SizedBox(height: 10),
-                  Text('24', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
-                  Text('Relación', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
-                ],
-              ),
+        body: TabBarView(
+          children: [
+            _buildLikesSection(),
+            _buildTopPicksSection(),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: '',
             ),
-          ),
-          Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF8B6F47), // Café bajo
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-              ),
-              child: Text(
-                'Descubre a quién le gustas',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFEFE6DD)),
-              ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: '',
             ),
-          ),
-        ],
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: '',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.brown[700],
+          unselectedItemColor: Colors.grey,
+          onTap: _onItemTapped,
+          iconSize: 36, // Tamaño de los iconos
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+        ),
       ),
     );
   }
