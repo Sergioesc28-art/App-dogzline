@@ -39,6 +39,8 @@ class _MatchScreenState extends State<MatchScreen> {
   Color _actionColor = Colors.transparent;
   double _opacity = 0.0;
   final ApiService _apiService = ApiService();
+  int _currentPage = 1;
+  List<Map<String, dynamic>> _likedDogs = [];
 
   @override
   void initState() {
@@ -48,13 +50,16 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Future<void> _initializeCards() async {
     List<Map<String, dynamic>> dogs = await generateDogs();
-    _swipeItems = dogs.map((profile) {
+    _swipeItems.addAll(dogs.map((profile) {
       return SwipeItem(
         content: profile,
-        likeAction: () => _showAction("LIKE ❤️", Colors.green),
+        likeAction: () {
+          _showAction("LIKE ❤️", Colors.green);
+          _likedDogs.add(profile);
+        },
         nopeAction: () => _showAction("DISLIKE ❌", Colors.red),
       );
-    }).toList();
+    }).toList());
 
     setState(() {
       _matchEngine = MatchEngine(swipeItems: _swipeItems);
@@ -63,7 +68,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Future<List<Map<String, dynamic>>> generateDogs() async {
     try {
-      List<Data> dogs = await _apiService.getDogs(page: 1, limit: 10);
+      List<Data> dogs = await _apiService.getDogs(page: _currentPage, limit: 10);
       return dogs.map((dog) {
         String base64Image = dog.fotos.split(',').last;
         return {
@@ -174,6 +179,17 @@ class _MatchScreenState extends State<MatchScreen> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.list),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MatchesScreen(likedDogs: _likedDogs)),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         alignment: Alignment.center,
@@ -189,10 +205,11 @@ class _MatchScreenState extends State<MatchScreen> {
                           final profile = _swipeItems[index].content;
                           return buildProfileCard(profile);
                         },
-                        onStackFinished: () {
+                        onStackFinished: () async {
                           setState(() {
-                            _initializeCards();
+                            _currentPage++;
                           });
+                          await _initializeCards();
                         },
                       ),
               ),
@@ -234,7 +251,7 @@ class _MatchScreenState extends State<MatchScreen> {
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => MatchesScreen(),
+                pageBuilder: (context, animation, secondaryAnimation) => MatchesScreen(likedDogs: _likedDogs),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
                   return child; // Sin animación
                 },

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:convert'; // Importa dart:convert para usar base64Decode
+import 'dart:typed_data'; // Importa dart:typed_data para usar Uint8List
 import 'swipe.dart'; // Importa la pantalla de MatchScreen (swipe)
 
 class MatchesScreen extends StatefulWidget {
+  final List<Map<String, dynamic>> likedDogs;
+
+  MatchesScreen({required this.likedDogs});
+
   @override
   _MatchesScreenState createState() => _MatchesScreenState();
 }
@@ -77,15 +83,15 @@ class _MatchesScreenState extends State<MatchesScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _buildCategorySection('Actividad Reciente'),
-          _buildCategorySection('Intereses en Común'),
-          _buildCategorySection('Recomendado'),
+          _buildCategorySection('Actividad Reciente', widget.likedDogs),
+          _buildCategorySection('Intereses en Común', []),
+          _buildCategorySection('Recomendado', []),
         ],
       ),
     );
   }
 
-  Widget _buildCategorySection(String title) {
+  Widget _buildCategorySection(String title, List<Map<String, dynamic>> dogs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -100,9 +106,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
           height: 200,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: 10, // Número de perfiles a mostrar
+            itemCount: dogs.isEmpty ? 10 : dogs.length, // Número de perfiles a mostrar
             itemBuilder: (context, index) {
-              return _buildProfileCard();
+              return dogs.isEmpty ? _buildProfileCard() : _buildDogProfileCard(dogs[index]);
             },
           ),
         ),
@@ -142,6 +148,41 @@ class _MatchesScreenState extends State<MatchesScreen> {
           SizedBox(height: 10),
           Text('Nombre', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
           Text('Edad', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDogProfileCard(Map<String, dynamic> dog) {
+    Uint8List? imageBytes;
+    try {
+      imageBytes = base64Decode(dog['image'] ?? '');
+    } catch (e) {
+      print('Error decoding base64 image: $e');
+    }
+
+    return Container(
+      width: 150,
+      margin: EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          imageBytes != null
+              ? CircleAvatar(
+                  backgroundImage: MemoryImage(imageBytes),
+                  radius: 40,
+                )
+              : CircleAvatar(
+                  child: Icon(Icons.pets),
+                  radius: 40,
+                ),
+          SizedBox(height: 10),
+          Text(dog['name'] ?? 'Nombre no disponible', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
+          Text('Edad: ${dog['age'] ?? 'Edad no disponible'}', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
         ],
       ),
     );
