@@ -14,7 +14,7 @@ class DogzlineApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Colors.orange,
+        primaryColor: Colors.brown[700],
         textTheme: GoogleFonts.poppinsTextTheme(),
       ),
       home: MatchScreen(),
@@ -33,6 +33,7 @@ class _MatchScreenState extends State<MatchScreen> {
   String _actionText = "";
   Color _actionColor = Colors.transparent;
   double _opacity = 0.0;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -51,23 +52,16 @@ class _MatchScreenState extends State<MatchScreen> {
 
       final response = await Dio().get(
         'https://dogzline-1.onrender.com/api/mascotas',
-        queryParameters: {
-          'page': 1,
-          'limit': 10,
-        },
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
+        queryParameters: {'page': 1, 'limit': 10},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
         List<Map<String, dynamic>> dogs = (response.data['mascotas'] as List)
             .map((json) => {
-                  "name": json['name'],
-                  "age": "${json['age']} años",
-                  "image": json['image'],
+                  "name": json['name'] ?? "Nombre desconocido",
+                  "age": json['age'] != null ? "${json['age']} años" : "Edad desconocida",
+                  "image": json['image'] ?? "https://via.placeholder.com/150"
                 })
             .toList();
         return dogs;
@@ -111,11 +105,24 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Widget buildProfileCard(Map<String, dynamic> profile) {
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 5,
       child: Column(
         children: [
-          Image.network(profile['image']),
-          Text(profile['name']),
-          Text(profile['age']),
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            child: Image.network(profile['image'], height: 300, width: double.infinity, fit: BoxFit.cover),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Text(profile['name'], style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                SizedBox(height: 5),
+                Text(profile['age'], style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -123,18 +130,30 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Widget buildActionButtons() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ElevatedButton(
+        FloatingActionButton(
+          heroTag: "dislike",
           onPressed: () => _matchEngine.currentItem?.nope(),
-          child: Text("DISLIKE"),
+          backgroundColor: Colors.red,
+          child: Icon(Icons.close, size: 32, color: Colors.white),
         ),
-        ElevatedButton(
+        SizedBox(width: 30),
+        FloatingActionButton(
+          heroTag: "like",
           onPressed: () => _matchEngine.currentItem?.like(),
-          child: Text("LIKE"),
+          backgroundColor: Colors.green,
+          child: Icon(Icons.favorite, size: 32, color: Colors.white),
         ),
       ],
     );
+  }
+
+  void _onNavBarTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Aquí puedes agregar navegación a diferentes pantallas si lo deseas
   }
 
   @override
@@ -143,7 +162,7 @@ class _MatchScreenState extends State<MatchScreen> {
       appBar: AppBar(
         title: Text("Dogzline", style: GoogleFonts.pacifico(fontSize: 28)),
         centerTitle: true,
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.brown[700],
       ),
       body: Stack(
         alignment: Alignment.center,
@@ -165,6 +184,7 @@ class _MatchScreenState extends State<MatchScreen> {
                 ),
               ),
               buildActionButtons(),
+              SizedBox(height: 10),
             ],
           ),
           Positioned(
@@ -177,6 +197,27 @@ class _MatchScreenState extends State<MatchScreen> {
                 style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: _actionColor),
               ),
             ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.brown[700],
+        selectedItemColor: Colors.orangeAccent,
+        unselectedItemColor: Colors.white,
+        currentIndex: _selectedIndex,
+        onTap: _onNavBarTapped,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pets),
+            label: "Mascotas",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: "Matches",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "Perfil",
           ),
         ],
       ),
