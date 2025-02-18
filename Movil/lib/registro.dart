@@ -12,15 +12,57 @@ class _RegistroScreenState extends State<RegistroScreen> {
   final TextEditingController _nombreCompletoController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final ApiService _apiService = ApiService();
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isPasswordValid = false;
+  bool _isPasswordMatching = false;
+
+  final emailPattern = r'^[a-zA-Z0-9._%+-]+@(gmail|hotmail|yahoo|outlook)\.[a-zA-Z]{2,}$';
+  final passwordPattern = r'^(?=.*[0-9])(?=.*[!@#\$&*~]).{6,}$';
+
+  void _validatePassword(String password) {
+    setState(() {
+      _isPasswordValid = RegExp(passwordPattern).hasMatch(password);
+      _isPasswordMatching = password == _confirmPasswordController.text;
+    });
+  }
+
+  void _validateConfirmPassword(String confirmPassword) {
+    setState(() {
+      _isPasswordMatching = confirmPassword == _passwordController.text;
+    });
+  }
 
   Future<void> _register() async {
     if (_nombreCompletoController.text.isEmpty || 
         _emailController.text.isEmpty || 
-        _passwordController.text.isEmpty) {
+        _passwordController.text.isEmpty || 
+        _confirmPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, completa todos los campos')),
+      );
+      return;
+    }
+
+    if (!RegExp(emailPattern).hasMatch(_emailController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, ingresa un correo electrónico válido')),
+      );
+      return;
+    }
+
+    if (!_isPasswordValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres, un número y un signo especial')),
+      );
+      return;
+    }
+
+    if (!_isPasswordMatching) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Las contraseñas no coinciden')),
       );
       return;
     }
@@ -112,6 +154,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     SizedBox(height: 20),
                     TextField(
                       controller: _nombreCompletoController,
+                      maxLength: 30,
                       decoration: InputDecoration(
                         labelText: 'Nombre Completo',
                         border: UnderlineInputBorder(),
@@ -120,6 +163,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     SizedBox(height: 20),
                     TextField(
                       controller: _emailController,
+                      maxLength: 25,
                       decoration: InputDecoration(
                         labelText: 'E-mail',
                         border: UnderlineInputBorder(),
@@ -129,6 +173,8 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     TextField(
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
+                      maxLength: 20,
+                      onChanged: _validatePassword,
                       decoration: InputDecoration(
                         labelText: 'Contraseña',
                         border: UnderlineInputBorder(),
@@ -143,6 +189,57 @@ class _RegistroScreenState extends State<RegistroScreen> {
                           },
                         ),
                       ),
+                    ),
+                    SizedBox(height: 20),
+                    TextField(
+                      controller: _confirmPasswordController,
+                      obscureText: !_isConfirmPasswordVisible,
+                      onChanged: _validateConfirmPassword,
+                      decoration: InputDecoration(
+                        labelText: 'Confirmar Contraseña',
+                        border: UnderlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'La contraseña debe tener al menos:',
+                          style: TextStyle(fontSize: 14, color: Colors.black),
+                        ),
+                        Text(
+                          '• 6 caracteres',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _passwordController.text.length >= 6 ? Colors.green : Colors.red,
+                          ),
+                        ),
+                        Text(
+                          '• Un número',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: RegExp(r'[0-9]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
+                          ),
+                        ),
+                        Text(
+                          '• Un signo especial',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: RegExp(r'[!@#\$&*~]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
