@@ -200,30 +200,13 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Dogzline',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.brown[700],
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const DialogueScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.brown[700],
-                          ),
-                          child: Text('Subir de nivel'),
-                        ),
-                      ],
+                    Text(
+                      'Dogzline',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown[700],
+                      ),
                     ),
                     SizedBox(height: 10),
                     Text(
@@ -293,7 +276,10 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                           backgroundImage: MemoryImage(base64Decode(mascota.fotos.split(',').last)),
                                         ),
                                         SizedBox(height: 8),
-                                        Text(mascota.nombre ?? ''),
+                                        Text(
+                                          mascota.nombre ?? '',
+                                          style: TextStyle(color: Colors.brown[700]), // Texto café
+                                        ),
                                       ],
                                     ),
                                   );

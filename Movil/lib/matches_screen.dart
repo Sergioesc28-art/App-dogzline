@@ -202,6 +202,9 @@ class _MatchesScreenState extends State<MatchesScreen> {
           ),
           centerTitle: true,
           bottom: TabBar(
+            indicatorColor: Colors.white,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.grey.shade400,
             tabs: [
               Tab(text: 'Likes'),
               Tab(text: 'Top Picks'),
