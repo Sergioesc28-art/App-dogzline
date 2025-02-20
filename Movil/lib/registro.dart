@@ -86,6 +86,15 @@ class _RegistroScreenState extends State<RegistroScreen> {
     }
   }
 
+  void _showPasswordRequirements() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('La contraseña debe tener al menos 6 caracteres, un número y un signo especial'),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,15 +187,24 @@ class _RegistroScreenState extends State<RegistroScreen> {
                       decoration: InputDecoration(
                         labelText: 'Contraseña',
                         border: UnderlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.help_outline, size: 20),
+                              onPressed: _showPasswordRequirements,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -210,37 +228,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'La contraseña debe tener al menos:',
-                          style: TextStyle(fontSize: 14, color: Colors.black),
-                        ),
-                        Text(
-                          '• 6 caracteres',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: _passwordController.text.length >= 6 ? Colors.green : Colors.red,
-                          ),
-                        ),
-                        Text(
-                          '• Un número',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: RegExp(r'[0-9]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
-                          ),
-                        ),
-                        Text(
-                          '• Un signo especial',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: RegExp(r'[!@#\$&*~]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _register,
@@ -262,7 +249,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
               ),
               // Login Option
               Padding(
-                padding: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.only(top: 10), // Ajusta el padding para subir el texto
                 child: TextButton(
                   onPressed: () {
                     Navigator.pushReplacement(

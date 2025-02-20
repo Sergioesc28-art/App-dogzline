@@ -30,38 +30,44 @@ class _LoginPageState extends State<LoginPage> {
   final ApiService _apiService = ApiService();
   bool _isPasswordVisible = false;
 
+  final _formKey = GlobalKey<FormState>();
+
+  final emailPattern = r'^[a-zA-Z0-9._%+-]+@(gmail|hotmail|yahoo|outlook)\.[a-zA-Z]{2,}$';
+
   Future<void> _login() async {
-    try {
-      final response = await _apiService.login(
-        _emailController.text,
-        _passwordController.text,
-      );
+    if (_formKey.currentState!.validate()) {
+      try {
+        final response = await _apiService.login(
+          _emailController.text,
+          _passwordController.text,
+        );
 
-      // Extraer el token de la respuesta JSON
-      final token = response['token'];
-      if (token == null) {
-        throw Exception('Token no encontrado en la respuesta');
+        // Extraer el token de la respuesta JSON
+        final token = response['token'];
+        if (token == null) {
+          throw Exception('Token no encontrado en la respuesta');
+        }
+
+        // Decodificar el token JWT para extraer el userId
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        final userId = decodedToken['id']; // Asegúrate de que el campo coincida con el JSON decodificado
+
+        // Almacenar el userId y el token en SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', userId);
+        await prefs.setString('token', token);
+
+        // Navegar a la pantalla de perfil
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfileScreen()),
+        );
+      } catch (e) {
+        print('Error de inicio de sesión: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Correo electrónico o contraseña incorrectos')),
+        );
       }
-
-      // Decodificar el token JWT para extraer el userId
-      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-      final userId = decodedToken['id']; // Asegúrate de que el campo coincida con el JSON decodificado
-
-      // Almacenar el userId y el token en SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', userId);
-      await prefs.setString('token', token);
-
-      // Navegar a la pantalla de perfil
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ProfileScreen()),
-      );
-    } catch (e) {
-      print('Error de inicio de sesión: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de inicio de sesión')),
-      );
     }
   }
 
@@ -71,138 +77,158 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: const Color(0xFFF8F2DE), // Fondo beige
       body: Center(
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage('assets/Logo_dogzline.png'), // Ruta de la imagen
-                      backgroundColor: Colors.transparent,
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Dogzline',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.brown[700],
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundImage: AssetImage('assets/Logo_dogzline.png'), // Ruta de la imagen
+                        backgroundColor: Colors.transparent,
                       ),
-                    ),
-                    Text(
-                      'Encuentra. Conoce. Conecta.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.brown[400],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Login Card
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Iniciar cuenta',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.brown[700],
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'E-mail',
-                        border: UnderlineInputBorder(),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: !_isPasswordVisible,
-                      decoration: InputDecoration(
-                        labelText: 'Contraseña',
-                        border: UnderlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
+                      SizedBox(height: 8),
+                      Text(
+                        'Dogzline',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.brown[700],
                         ),
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[300],
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                      Text(
+                        'Encuentra. Conoce. Conecta.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.brown[400],
                         ),
-                        minimumSize: Size(double.infinity, 50),
                       ),
-                      child: Text(
-                        'Iniciar sesión',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Register Option
-              Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => RegistroScreen()),
-                    );
-                  },
-                  child: RichText(
-                    text: TextSpan(
-                      text: '¿No tienes una cuenta? ',
-                      style: TextStyle(color: Colors.black),
-                      children: [
-                        TextSpan(
-                          text: 'Registrarse',
-                          style: TextStyle(
-                            color: Colors.brown[700],
-                            fontWeight: FontWeight.bold,
+                // Login Card
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Iniciar cuenta',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.brown[700],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      TextFormField(
+                        controller: _emailController,
+                        maxLength: 25,
+                        decoration: InputDecoration(
+                          labelText: 'E-mail',
+                          border: UnderlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, ingresa tu correo electrónico';
+                          }
+                          if (!RegExp(emailPattern).hasMatch(value)) {
+                            return 'Por favor, ingresa un correo electrónico válido';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 20),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: !_isPasswordVisible,
+                        maxLength: 20,
+                        decoration: InputDecoration(
+                          labelText: 'Contraseña',
+                          border: UnderlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
                           ),
                         ),
-                      ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor, ingresa tu contraseña';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[300],
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                        child: Text(
+                          'Iniciar sesión',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Register Option
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => RegistroScreen()),
+                      );
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        text: '¿No tienes una cuenta? ',
+                        style: TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: 'Registrarse',
+                            style: TextStyle(
+                              color: Colors.brown[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
