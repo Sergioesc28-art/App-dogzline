@@ -36,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
+      _showLoadingDialog();
       try {
         final response = await _apiService.login(
           _emailController.text,
@@ -57,18 +58,51 @@ class _LoginPageState extends State<LoginPage> {
         await prefs.setString('userId', userId);
         await prefs.setString('token', token);
 
+        // Cerrar el cuadro de diálogo de carga
+        Navigator.of(context).pop();
+
         // Navegar a la pantalla de perfil
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => ProfileScreen()),
         );
       } catch (e) {
+        // Cerrar el cuadro de diálogo de carga
+        Navigator.of(context).pop();
+
         print('Error de inicio de sesión: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Correo electrónico o contraseña incorrectos')),
         );
       }
     }
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Cargando...', style: TextStyle(fontSize: 16)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
