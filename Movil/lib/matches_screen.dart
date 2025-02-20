@@ -192,39 +192,84 @@ class _MatchesScreenState extends State<MatchesScreen> {
   }
 
   Widget _buildDogProfileCard(Map<String, dynamic> dog) {
-    Uint8List? imageBytes;
-    try {
-      imageBytes = base64Decode(dog['image'] ?? '');
-    } catch (e) {
-      print('Error decoding base64 image: $e');
-    }
+  Uint8List? imageBytes;
+  try {
+    String? imageData = dog['image'];
 
-    return Container(
-      width: 150,
-      margin: EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          imageBytes != null
-              ? CircleAvatar(
-                  backgroundImage: MemoryImage(imageBytes),
-                  radius: 40,
-                )
-              : CircleAvatar(
-                  child: Icon(Icons.pets),
-                  radius: 40,
-                ),
-          SizedBox(height: 10),
-          Text(dog['name'] ?? 'Nombre no disponible', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
-          Text('Edad: ${dog['age'] ?? 'Edad no disponible'}', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
-        ],
-      ),
-    );
+    if (imageData != null && imageData.isNotEmpty) {
+      // Extraer la parte base64 si tiene prefijo
+      if (imageData.contains(',')) {
+        imageData = imageData.split(',').last;
+      }
+
+      // Eliminar espacios en blanco y caracteres no válidos
+      imageData = imageData.replaceAll(RegExp(r'\s+'), '');
+
+      // Decodificar la imagen base64
+      imageBytes = base64Decode(imageData);
+    }
+  } catch (e) {
+    print('Error decodificando imagen base64: $e');
+    imageBytes = null;
   }
+
+  return Container(
+    width: 150,
+    margin: EdgeInsets.symmetric(horizontal: 8),
+    decoration: BoxDecoration(
+      color: Colors.grey.shade200,
+      borderRadius: BorderRadius.circular(15),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.shade400,
+          blurRadius: 4,
+          offset: Offset(2, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        imageBytes != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.memory(
+                  imageBytes,
+                  fit: BoxFit.cover,
+                  width: 150,
+                  height: 150,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Error mostrando imagen: $error');
+                    return Container(
+                      width: 150,
+                      height: 150,
+                      color: Colors.grey.shade300,
+                      child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+                    );
+                  },
+                ),
+              )
+            : Container(
+                width: 150,
+                height: 150,
+                color: Colors.grey.shade300,
+                child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+              ),
+        SizedBox(height: 10),
+        Text(
+          dog['name'] ?? 'Nombre no disponible',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
+          textAlign: TextAlign.center,
+        ),
+        Text(
+          'Edad: ${dog['age'] ?? 'Edad no disponible'}',
+          style: TextStyle(fontSize: 14, color: Colors.brown.shade400),
+        ),
+      ],
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
