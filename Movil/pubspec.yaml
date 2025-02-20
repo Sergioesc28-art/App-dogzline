@@ -19,6 +19,8 @@ dependencies:
   image_picker: ^0.8.4+3 # Paquete para seleccionar imágenes
   swipe_cards: ^2.0.0+1 # Paquete para la funcionalidad de swipe
   google_fonts: ^4.0.0 # Paquete para usar Google Fonts en Flutter
+  carousel_slider: ^5.0.0
+  lottie: ^3.3.1
 
 dev_dependencies:
   flutter_test:

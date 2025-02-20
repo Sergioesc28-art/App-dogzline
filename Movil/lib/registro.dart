@@ -86,15 +86,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
     }
   }
 
-  void _showPasswordRequirements() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('La contraseña debe tener al menos 6 caracteres, un número y un signo especial'),
-        duration: Duration(seconds: 3),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,32 +170,26 @@ class _RegistroScreenState extends State<RegistroScreen> {
                       ),
                     ),
                     SizedBox(height: 20),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: !_isPasswordVisible,
-                      maxLength: 20,
-                      onChanged: _validatePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Contraseña',
-                        border: UnderlineInputBorder(),
-                        suffixIcon: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
-                                });
-                              },
+                    Tooltip(
+                      message: 'La contraseña debe tener al menos 6 caracteres, un número y un signo especial',
+                      child: TextField(
+                        controller: _passwordController,
+                        obscureText: !_isPasswordVisible,
+                        maxLength: 20,
+                        onChanged: _validatePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Contraseña',
+                          border: UnderlineInputBorder(),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                             ),
-                            IconButton(
-                              icon: Icon(Icons.help_outline, size: 20),
-                              onPressed: _showPasswordRequirements,
-                            ),
-                          ],
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -227,6 +212,60 @@ class _RegistroScreenState extends State<RegistroScreen> {
                           },
                         ),
                       ),
+                    ),
+                    SizedBox(height: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              _passwordController.text.length >= 6 ? Icons.check_circle : Icons.cancel,
+                              color: _passwordController.text.length >= 6 ? Colors.green : Colors.red,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              '6 caracteres',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _passwordController.text.length >= 6 ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              RegExp(r'[0-9]').hasMatch(_passwordController.text) ? Icons.check_circle : Icons.cancel,
+                              color: RegExp(r'[0-9]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Un número',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: RegExp(r'[0-9]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              RegExp(r'[!@#\$&*~]').hasMatch(_passwordController.text) ? Icons.check_circle : Icons.cancel,
+                              color: RegExp(r'[!@#\$&*~]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Un signo especial',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: RegExp(r'[!@#\$&*~]').hasMatch(_passwordController.text) ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(

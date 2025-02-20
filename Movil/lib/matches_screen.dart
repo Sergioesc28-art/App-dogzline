@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert'; // Importa dart:convert para usar base64Decode
 import 'dart:typed_data'; // Importa dart:typed_data para usar Uint8List
 import 'swipe.dart'; // Importa la pantalla de MatchScreen (swipe)
+import 'dogs_list_screen.dart'; // Importa la nueva pantalla DogsListScreen
+import 'package:shared_preferences/shared_preferences.dart'; // Importa shared_preferences
 
 class MatchesScreen extends StatefulWidget {
   final List<Map<String, dynamic>> likedDogs;
@@ -14,6 +16,13 @@ class MatchesScreen extends StatefulWidget {
 
 class _MatchesScreenState extends State<MatchesScreen> {
   int _selectedIndex = 1; // Matches es el segundo ítem en la barra de navegación
+  List<Map<String, dynamic>> _recentActivityDogs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLikedDogs();
+  }
 
   void _onItemTapped(int index) {
     if (index == 0) {
@@ -26,6 +35,15 @@ class _MatchesScreenState extends State<MatchesScreen> {
         _selectedIndex = index;
       });
     }
+  }
+
+  Future<void> _loadLikedDogs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedDogsString = prefs.getString('likedDogs') ?? '[]';
+    final List<dynamic> likedDogsList = jsonDecode(likedDogsString);
+    setState(() {
+      _recentActivityDogs = likedDogsList.cast<Map<String, dynamic>>();
+    });
   }
 
   Widget _buildLikesSection() {
@@ -61,7 +79,17 @@ class _MatchesScreenState extends State<MatchesScreen> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DogsListScreen(
+                    title: 'Likes',
+                    dogs: widget.likedDogs,
+                  ),
+                ),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF8B6F47), // Café bajo
               shape: RoundedRectangleBorder(
@@ -83,7 +111,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _buildCategorySection('Actividad Reciente', widget.likedDogs),
+          _buildCategorySection('Actividad Reciente', _recentActivityDogs),
           _buildCategorySection('Intereses en Común', []),
           _buildCategorySection('Recomendado', []),
         ],
@@ -115,7 +143,17 @@ class _MatchesScreenState extends State<MatchesScreen> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DogsListScreen(
+                    title: title,
+                    dogs: dogs,
+                  ),
+                ),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF8B6F47), // Café bajo
               shape: RoundedRectangleBorder(

@@ -45,7 +45,23 @@ class _MatchScreenState extends State<MatchScreen> {
   @override
   void initState() {
     super.initState();
+    _loadLikedDogs();
     _initializeCards();
+  }
+
+  Future<void> _loadLikedDogs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedDogsString = prefs.getString('likedDogs') ?? '[]';
+    final List<dynamic> likedDogsList = jsonDecode(likedDogsString);
+    setState(() {
+      _likedDogs = likedDogsList.cast<Map<String, dynamic>>();
+    });
+  }
+
+  Future<void> _saveLikedDogs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedDogsString = jsonEncode(_likedDogs);
+    await prefs.setString('likedDogs', likedDogsString);
   }
 
   Future<void> _initializeCards() async {
@@ -56,6 +72,7 @@ class _MatchScreenState extends State<MatchScreen> {
         likeAction: () {
           _showAction("LIKE ❤️", Colors.green);
           _likedDogs.add(profile);
+          _saveLikedDogs();
         },
         nopeAction: () => _showAction("DISLIKE ❌", Colors.red),
       );
