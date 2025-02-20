@@ -1,5 +1,5 @@
 class User {
-  final String token; // Token para autenticación
+  final String token;
 
   User({
     required this.token,
@@ -7,7 +7,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      token: json['token'] ?? '', // Asegúrate de que el campo 'token' exista en la respuesta de tu API
+      token: json['token'] ?? '',
     );
   }
 }
@@ -19,13 +19,13 @@ class Data {
   final String raza;
   final String sexo;
   final String color;
-  final String vacunas;       // Cambiado a String para coincidir con el backend
+  final String vacunas;
   final String caracteristicas;
-  final String certificado;   // Cambiado a String para coincidir con el backend
-  final String fotos;        // Cambiado a String para coincidir con el backend
-  final String comportamiento; // Nota: en el backend es 'Comportamiento' con mayúscula
+  final String certificado;
+  final String? fotos; // Permite valores nulos para fotos
+  final String comportamiento;
   final String idUsuario;
-  final String distancia; // Agregado para coincidir con el uso en dogzline_ui.dart
+  final String distancia;
 
   Data({
     required this.id,
@@ -40,12 +40,26 @@ class Data {
     required this.fotos,
     required this.comportamiento,
     required this.idUsuario,
-    required this.distancia, // Agregado para coincidir con el uso en dogzline_ui.dart
+    required this.distancia,
   });
 
   factory Data.fromJson(Map<String, dynamic> json) {
+    String getId() {
+      if (json['_id'] is Map && json['_id']['\$oid'] != null) {
+        return json['_id']['\$oid'];
+      }
+      return json['_id']?.toString() ?? '';
+    }
+
+    String getUserId() {
+      if (json['id_usuario'] is Map && json['id_usuario']['\$oid'] != null) {
+        return json['id_usuario']['\$oid'];
+      }
+      return json['id_usuario']?.toString() ?? '';
+    }
+
     return Data(
-      id: json['_id'] ?? '',
+      id: getId(),
       nombre: json['nombre'] ?? '',
       edad: json['edad'] ?? 0,
       raza: json['raza'] ?? '',
@@ -54,10 +68,10 @@ class Data {
       vacunas: json['vacunas'] ?? '',
       caracteristicas: json['caracteristicas'] ?? '',
       certificado: json['certificado'] ?? '',
-      fotos: json['fotos'] ?? '',
-      comportamiento: json['Comportamiento'] ?? '', // Nota la mayúscula
-      idUsuario: json['id_usuario'] ?? '',
-      distancia: json['distancia'] ?? '', // Agregado para coincidir con el uso en dogzline_ui.dart
+      fotos: json['fotos'] as String?, // Ahora fotos es una cadena o null
+      comportamiento: json['Comportamiento'] ?? '',
+      idUsuario: getUserId(),
+      distancia: json['distancia'] ?? '',
     );
   }
 
@@ -72,9 +86,9 @@ class Data {
       'caracteristicas': caracteristicas,
       'certificado': certificado,
       'fotos': fotos,
-      'Comportamiento': comportamiento, // Asegúrate de que sea con mayúscula
+      'Comportamiento': comportamiento,
       'id_usuario': idUsuario,
-      'distancia': distancia, // Agregado para coincidir con el uso en dogzline_ui.dart
+      'distancia': distancia,
     };
   }
 }

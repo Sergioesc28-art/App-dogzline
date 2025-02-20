@@ -32,6 +32,8 @@ class MatchScreen extends StatefulWidget {
   _MatchScreenState createState() => _MatchScreenState();
 }
 
+// Importa el archivo de matches
+
 class _MatchScreenState extends State<MatchScreen> {
   late MatchEngine _matchEngine;
   List<SwipeItem> _swipeItems = [];
@@ -86,16 +88,41 @@ class _MatchScreenState extends State<MatchScreen> {
   Future<List<Map<String, dynamic>>> generateDogs() async {
     try {
       List<Data> dogs = await _apiService.getDogs(page: _currentPage, limit: 10);
+
       return dogs.map((dog) {
-        String base64Image = dog.fotos.split(',').last;
+        String? base64Image = '';
+
+        if (dog.fotos != null) {
+          if (dog.fotos!.startsWith('data:image')) {
+            // Si la cadena ya incluye el prefijo, no hacemos nada
+            base64Image = dog.fotos;
+          } else {
+            // Para manejar casos con Binary.createFromBase64
+            final regex = RegExp(r"Binary\.createFromBase64\('(.*)',\s*\d+\)");
+            final match = regex.firstMatch(dog.fotos!);
+            if (match != null) {
+              base64Image = 'data:image/png;base64,${match.group(1)}';
+            } else {
+              print('No se pudo extraer la imagen para el perro: ${dog.nombre}');
+            }
+          }
+        }
+
+        if (base64Image!.isEmpty) {
+          print('No se pudo obtener la imagen para el perro: ${dog.nombre}');
+        }
+
         return {
           'image': base64Image,
           'name': dog.nombre,
           'age': dog.edad.toString(),
+          'raza': dog.raza,
+          'caracteristicas': dog.caracteristicas,
         };
       }).toList();
     } catch (e) {
-      print('Error fetching dogs: $e');
+      print('Error obteniendo perros: $e');
+      print('Stack trace: ${StackTrace.current}');
       return [];
     }
   }
@@ -119,9 +146,14 @@ class _MatchScreenState extends State<MatchScreen> {
   Widget buildProfileCard(Map<String, dynamic> profile) {
     Uint8List? imageBytes;
     try {
-      imageBytes = base64Decode(profile['image'] ?? '');
+      if (profile['image'] != null && profile['image'].isNotEmpty) {
+        final base64String = profile['image'].split(',').last;
+        imageBytes = base64Decode(base64String);
+      }
     } catch (e) {
-      print('Error decoding base64 image: $e');
+      print('Error decodificando imagen base64: $e');
+      print('Cadena base64 inválida: ${profile['image']}');
+      imageBytes = null;
     }
 
     return Card(
@@ -141,6 +173,10 @@ class _MatchScreenState extends State<MatchScreen> {
                       imageBytes,
                       fit: BoxFit.cover,
                       width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Error mostrando imagen: $error');
+                        return Center(child: Text('Error al cargar la imagen'));
+                      },
                     )
                   : Center(child: Text('Imagen no disponible')),
             ),
@@ -164,8 +200,7 @@ class _MatchScreenState extends State<MatchScreen> {
       ),
     );
   }
-
-  Widget buildActionButtons() {
+   Widget buildActionButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -183,103 +218,111 @@ class _MatchScreenState extends State<MatchScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Dogzline", style: GoogleFonts.pacifico(fontSize: 28)),
-        centerTitle: true,
-        backgroundColor: Color(0xFF8B6F47), // Café bajo
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.list),
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("Dogzline", style: GoogleFonts.pacifico(fontSize: 28)),
+          centerTitle: true,
+          backgroundColor: Color(0xFF8B6F47), // Café bajo
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MatchesScreen(likedDogs: _likedDogs)),
-              );
+              Navigator.pop(context);
             },
           ),
-        ],
-      ),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: _swipeItems.isEmpty
-                    ? Center(child: CircularProgressIndicator())
-                    : SwipeCards(
-                        matchEngine: _matchEngine,
-                        itemBuilder: (context, index) {
-                          final profile = _swipeItems[index].content;
-                          return buildProfileCard(profile);
-                        },
-                        onStackFinished: () async {
-                          setState(() {
-                            _currentPage++;
-                          });
-                          await _initializeCards();
-                        },
-                      ),
-              ),
-              buildActionButtons(),
-            ],
-          ),
-          Positioned(
-            top: 200,
-            child: AnimatedOpacity(
-              duration: Duration(milliseconds: 200),
-              opacity: _opacity,
-              child: Text(
-                _actionText,
-                style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: _actionColor),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.list),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          MatchesScreen(likedDogs: _likedDogs)),
+                );
+              },
+            ),
+          ],
+        ),
+        body: Stack(
+          alignment: Alignment.center,
+          children: [
+            Column(
+              children: [
+                Expanded(
+                  child: _swipeItems.isEmpty
+                      ? Center(child: CircularProgressIndicator())
+                      : SwipeCards(
+                          matchEngine: _matchEngine,
+                          itemBuilder: (context, index) {
+                            final profile = _swipeItems[index].content;
+                            return buildProfileCard(profile);
+                          },
+                          onStackFinished: () async {
+                            setState(() {
+                              _currentPage++;
+                            });
+                            await _initializeCards();
+                          },
+                        ),
+                ),
+                buildActionButtons(),
+              ],
+            ),
+            Positioned(
+              top: 200,
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 200),
+                opacity: _opacity,
+                child: Text(
+                  _actionText,
+                  style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: _actionColor),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '',
-          ),
-        ],
-        selectedItemColor: Colors.brown[700],
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => MatchesScreen(likedDogs: _likedDogs),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return child; // Sin animación
-                },
-              ),
-            );
-          }
-        },
-        iconSize: 36, // Tamaño de los iconos
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-      ),
-    );
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: '',
+            ),
+          ],
+          selectedItemColor: Colors.brown[700],
+          unselectedItemColor: Colors.grey,
+          onTap: (index) {
+            if (index == 1) {
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      MatchesScreen(likedDogs: _likedDogs),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return child; // Sin animación
+                  },
+                ),
+              );
+            }
+          },
+          iconSize: 36, // Tamaño de los iconos
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+        ),
+      );
+    }
   }
-}
+

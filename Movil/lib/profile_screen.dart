@@ -273,7 +273,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                       children: [
                                         CircleAvatar(
                                           radius: 30,
-                                          backgroundImage: MemoryImage(base64Decode(mascota.fotos.split(',').last)),
+                                          backgroundImage: MemoryImage(base64Decode(mascota.fotos!.split(',').last)),
                                         ),
                                         SizedBox(height: 8),
                                         Text(
