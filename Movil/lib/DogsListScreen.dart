@@ -11,33 +11,80 @@ class DogsListScreen extends StatelessWidget {
   Widget _buildDogProfileCard(Map<String, dynamic> dog) {
     Uint8List? imageBytes;
     try {
-      imageBytes = base64Decode(dog['image'] ?? '');
+      String? imageData = dog['image'];
+
+      if (imageData != null && imageData.isNotEmpty) {
+        // Extraer la parte base64 si tiene prefijo
+        if (imageData.contains(',')) {
+          imageData = imageData.split(',').last;
+        }
+
+        // Eliminar espacios en blanco y caracteres no válidos
+        imageData = imageData.replaceAll(RegExp(r'\s+'), '');
+
+        // Decodificar la imagen base64
+        imageBytes = base64Decode(imageData);
+      }
     } catch (e) {
-      print('Error decoding base64 image: $e');
+      print('Error decodificando imagen base64: $e');
+      imageBytes = null;
     }
 
     return Container(
       width: 150,
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade400,
+            blurRadius: 4,
+            offset: Offset(2, 2),
+          ),
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           imageBytes != null
-              ? CircleAvatar(
-                  backgroundImage: MemoryImage(imageBytes),
-                  radius: 40,
+              ? ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                  child: Image.memory(
+                    imageBytes,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 100, // Ajusta la altura según tus necesidades
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error mostrando imagen: $error');
+                      return Container(
+                        width: double.infinity,
+                        height: 100,
+                        color: Colors.grey.shade300,
+                        child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+                      );
+                    },
+                  ),
                 )
-              : CircleAvatar(
-                  child: Icon(Icons.pets),
-                  radius: 40,
+              : Container(
+                  width: double.infinity,
+                  height: 100,
+                  color: Colors.grey.shade300,
+                  child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
                 ),
           SizedBox(height: 10),
-          Text(dog['name'] ?? 'Nombre no disponible', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
-          Text('Edad: ${dog['age'] ?? 'Edad no disponible'}', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              dog['name'] ?? 'Nombre no disponible',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.brown),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Text(
+            'Edad: ${dog['age'] ?? 'Edad no disponible'}',
+            style: TextStyle(fontSize: 14, color: Colors.brown.shade400),
+          ),
         ],
       ),
     );
@@ -54,18 +101,26 @@ class DogsListScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: GridView.builder(
-        padding: EdgeInsets.all(16),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: dogs.length,
-        itemBuilder: (context, index) {
-          return _buildDogProfileCard(dogs[index]);
-        },
-      ),
+      body: dogs.isEmpty
+          ? Center(
+              child: Text(
+                'No hay perros para mostrar',
+                style: TextStyle(fontSize: 18, color: Colors.brown.shade700),
+              ),
+            )
+          : GridView.builder(
+              padding: EdgeInsets.all(16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Número de columnas en la cuadrícula
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.75, // Ajusta la relación de aspecto según tus necesidades
+              ),
+              itemCount: dogs.length,
+              itemBuilder: (context, index) {
+                return _buildDogProfileCard(dogs[index]);
+              },
+            ),
     );
   }
 }

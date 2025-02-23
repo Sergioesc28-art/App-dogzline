@@ -3,12 +3,12 @@ import 'package:swipe_cards/swipe_cards.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // Importa dart:convert para usar base64Decode
-import 'dart:typed_data'; // Importa dart:typed_data para usar Uint8List
-import 'dart:ui';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'models/data_model.dart';
 import 'services/api_service.dart';
-import 'matches_screen.dart'; // Importa el archivo de matches
+import 'matches_screen.dart';
+import 'dart:math';
 
 void main() {
   runApp(DogzlineApp());
@@ -40,9 +40,7 @@ class _MatchScreenState extends State<MatchScreen> {
   Color _actionColor = Colors.transparent;
   double _opacity = 0.0;
   final ApiService _apiService = ApiService();
-  int _currentPage = 1;
   List<Map<String, dynamic>> _likedDogs = [];
-  // Cache para imágenes decodificadas
   final Map<String, Uint8List> _imageCache = {};
 
   @override
@@ -69,14 +67,11 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Future<void> _initializeCards() async {
     List<Map<String, dynamic>> dogs = await generateDogs();
+    _swipeItems.clear(); // Limpiar la lista antes de agregar nuevos elementos
     _swipeItems.addAll(dogs.map((profile) {
       return SwipeItem(
         content: profile,
-        likeAction: () {
-          _showAction("LIKE ❤️", Colors.green);
-          _likedDogs.add(profile);
-          _saveLikedDogs();
-        },
+        likeAction: () => _onLikeAction(profile),
         nopeAction: () => _showAction("DISLIKE ❌", Colors.red),
       );
     }).toList());
@@ -86,22 +81,41 @@ class _MatchScreenState extends State<MatchScreen> {
     });
   }
 
+  void _onLikeAction(Map<String, dynamic> profile) {
+    _showAction("LIKE ❤️", Colors.green);
+    _likedDogs.add(profile);
+    _saveLikedDogs();
+    _sendLikeNotification(profile);
+  }
+
+  Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
+    try {
+      final notificacion = Notificacion(
+        id: '',
+        idUsuario: profile['idUsuario'] ?? '',
+        idMascota: profile['id'] ?? '',
+        mensajeLlegada: DateTime.now(),
+        contenido: "¡Te han dado un like en tu mascota: ${profile['nombre']}!",
+        leido: false,
+        foto: profile['fotos'],
+      );
+
+      Notificacion createdNotification =
+          await ApiService().createNotificacion(notificacion);
+      print("Notificación enviada: ${createdNotification.toJson()}");
+    } catch (error) {
+      print("Error al enviar notificación de like: $error");
+    }
+  }
+
   Future<List<Map<String, dynamic>>> generateDogs() async {
     try {
-      List<Data> dogs =
-          await _apiService.getDogs(page: _currentPage, limit: 10);
-
-      for (var dog in dogs) {
-        if (dog.fotos != null && dog.fotos!.isNotEmpty) {
-          print(
-              'Perro: ${dog.nombre}, longitud de datos: ${dog.fotos!.length}');
-        }
-      }
+      final randomPage = Random().nextInt(10) + 1;
+      List<Data> dogs = await _apiService.getDogs(page: randomPage, limit: 10);
+      dogs.shuffle();
 
       return dogs.map((dog) {
         String imageData = dog.fotos ?? '';
-
-        // Asegurarte de que la imagen es una cadena base64 válida
         if (imageData.isNotEmpty && !imageData.startsWith('data:image')) {
           imageData = 'data:image/png;base64,$imageData';
         }
@@ -116,7 +130,6 @@ class _MatchScreenState extends State<MatchScreen> {
       }).toList();
     } catch (e) {
       print('Error obteniendo perros: $e');
-      print('Stack trace: ${StackTrace.current}');
       return [];
     }
   }
@@ -137,7 +150,6 @@ class _MatchScreenState extends State<MatchScreen> {
     });
   }
 
-  // Método mejorado para obtener datos de imagen
   Future<Uint8List?> _getImageBytes(String? imageString) async {
     if (imageString == null || imageString.isEmpty) {
       return null;
@@ -145,24 +157,16 @@ class _MatchScreenState extends State<MatchScreen> {
 
     try {
       String base64Data = imageString;
-
-      // Extraer la parte base64 si tiene prefijo
       if (base64Data.contains(',')) {
         base64Data = base64Data.split(',').last.trim();
       }
-
-      // Eliminar espacios en blanco
       base64Data = base64Data.replaceAll(RegExp(r'\s+'), '');
 
-      // Asegurar que la longitud sea múltiplo de 4 (requerido para base64)
       while (base64Data.length % 4 != 0) {
         base64Data += '=';
       }
 
-      // Decodificar la imagen
       final bytes = base64Decode(base64Data);
-
-      // Verificar que tengamos suficientes datos para una imagen
       if (bytes.length < 100) {
         print('Advertencia: Imagen demasiado pequeña (${bytes.length} bytes)');
         return null;
@@ -182,10 +186,8 @@ class _MatchScreenState extends State<MatchScreen> {
         Widget imageWidget;
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Mostrar indicador de carga mientras se decodifica la imagen
           imageWidget = Center(child: CircularProgressIndicator());
         } else if (snapshot.hasData && snapshot.data != null) {
-          // Mostrar la imagen decodificada sin forzar dimensiones
           imageWidget = Image.memory(
             snapshot.data!,
             fit: BoxFit.cover,
@@ -196,7 +198,6 @@ class _MatchScreenState extends State<MatchScreen> {
             },
           );
         } else {
-          // Mostrar un placeholder si no hay imagen
           imageWidget = Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -219,11 +220,11 @@ class _MatchScreenState extends State<MatchScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AspectRatio(
-                aspectRatio: 1, // Mantener una relación de aspecto cuadrada
+                aspectRatio: 1,
                 child: ClipRRect(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   child: Container(
-                    color: Colors.white, // Fondo blanco para las imágenes
+                    color: Colors.white,
                     child: imageWidget,
                   ),
                 ),
@@ -308,7 +309,7 @@ class _MatchScreenState extends State<MatchScreen> {
       appBar: AppBar(
         title: Text("Dogzline", style: GoogleFonts.pacifico(fontSize: 28)),
         centerTitle: true,
-        backgroundColor: Color(0xFF8B6F47), // Café bajo
+        backgroundColor: Color(0xFF8B6F47),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -343,9 +344,6 @@ class _MatchScreenState extends State<MatchScreen> {
                           return buildProfileCard(profile);
                         },
                         onStackFinished: () async {
-                          setState(() {
-                            _currentPage++;
-                          });
                           await _initializeCards();
                         },
                       ),
@@ -403,7 +401,7 @@ class _MatchScreenState extends State<MatchScreen> {
             );
           }
         },
-        iconSize: 36, // Tamaño de los iconos
+        iconSize: 36,
         showSelectedLabels: false,
         showUnselectedLabels: false,
       ),

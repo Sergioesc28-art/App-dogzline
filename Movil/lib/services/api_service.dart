@@ -19,7 +19,8 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        print('Response data: ${response.data}'); // Imprime la respuesta completa
+        print(
+            'Response data: ${response.data}'); // Imprime la respuesta completa
         return response.data;
       } else {
         throw Exception('Failed to login: ${response.data['mensaje']}');
@@ -28,8 +29,10 @@ class ApiService {
       throw Exception('Error de inicio de sesión: $e');
     }
   }
+
   // Método de registro
-  Future<void> register(String nombreCompleto, String email, String contrasena, String role) async {
+  Future<void> register(String nombreCompleto, String email, String contrasena,
+      String role) async {
     try {
       final response = await _dio.post(
         'https://dogzline-1.onrender.com/api/usuarios',
@@ -48,6 +51,7 @@ class ApiService {
       throw Exception('Error al registrar: $e');
     }
   }
+
   // Método para crear una nueva mascota
   Future<Data> createMascota(Data mascota) async {
     try {
@@ -78,6 +82,7 @@ class ApiService {
       throw Exception('Error al crear la mascota: $e');
     }
   }
+
   // Método para obtener las mascotas de un usuario
   Future<List<Data>> getMascotasByUser(int page, int limit) async {
     try {
@@ -113,8 +118,9 @@ class ApiService {
       throw Exception('Error al obtener las mascotas: $e');
     }
   }
+
   // Método para obtener todas las mascotas
-    Future<List<Data>> getDogs({int page = 1, int limit = 10}) async {
+  Future<List<Data>> getDogs({int page = 1, int limit = 10}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -147,5 +153,95 @@ class ApiService {
     } catch (e) {
       throw Exception('Error al obtener las mascotas: $e');
     }
-  } 
+  }
+
+  // Obtener notificaciones del usuario
+  Future<List<Notificacion>> getNotificaciones() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.get(
+        'https://dogzline-1.onrender.com/api/notificaciones',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        List<Notificacion> notificaciones = (response.data as List)
+            .map((json) => Notificacion.fromJson(json))
+            .toList();
+        return notificaciones;
+      } else {
+        throw Exception('Error al obtener las notificaciones');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener las notificaciones: $e');
+    }
+  }
+
+  // Crear una nueva notificación
+  Future<Notificacion> createNotificacion(Notificacion notificacion) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.post(
+        'https://dogzline-1.onrender.com/api/notificaciones',
+        data: notificacion.toJson(),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 201) {
+        return Notificacion.fromJson(response.data);
+      } else {
+        throw Exception('Error al crear la notificación');
+      }
+    } catch (e) {
+      throw Exception('Error al crear la notificación: $e');
+    }
+  }
+
+  // Actualizar notificación (marcar como leída)
+  Future<void> marcarNotificacionComoLeida(String idNotificacion) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.put(
+        'https://dogzline-1.onrender.com/api/notificaciones/$idNotificacion',
+        data: {'leido': true},
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al actualizar la notificación');
+      }
+    } catch (e) {
+      throw Exception('Error al actualizar la notificación: $e');
+    }
+  }
 }

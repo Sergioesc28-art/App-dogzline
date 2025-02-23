@@ -297,7 +297,49 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
   }
 }
 
-class NotificationsPage extends StatelessWidget {
+class NotificationsPage extends StatefulWidget {
+  const NotificationsPage({Key? key}) : super(key: key);
+
+  @override
+  _NotificationsPageState createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  late Future<List<Notificacion>> _futureNotificaciones;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureNotificaciones = ApiService().getNotificaciones();
+  }
+
+  // Función para refrescar las notificaciones
+  Future<void> _refreshNotificaciones() async {
+    setState(() {
+      _futureNotificaciones = ApiService().getNotificaciones();
+    });
+  }
+
+  // Función auxiliar para construir el avatar con la imagen del perro que dio like
+  Widget _buildAvatarFromBase64(String? base64String) {
+    if (base64String == null || base64String.isEmpty) {
+      return Icon(Icons.notifications, color: Colors.brown[700]);
+    }
+    try {
+      // Si la cadena tiene un prefijo (por ejemplo, 'data:image/png;base64,'), lo eliminamos.
+      if (base64String.contains('base64,')) {
+        base64String = base64String.split('base64,').last;
+      }
+      final decodedBytes = base64Decode(base64String);
+      return CircleAvatar(
+        backgroundImage: MemoryImage(decodedBytes),
+      );
+    } catch (e) {
+      print("Error al decodificar la imagen: $e");
+      return Icon(Icons.error, color: Colors.red);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -320,13 +362,79 @@ class NotificationsPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Center(
-        child: Text(
-          'Aún no hay notificaciones.',
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.brown[700],
-          ),
+      body: RefreshIndicator(
+        onRefresh: _refreshNotificaciones,
+        child: FutureBuilder<List<Notificacion>>(
+          future: _futureNotificaciones,
+          builder:
+              (BuildContext context, AsyncSnapshot<List<Notificacion>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: TextStyle(fontSize: 18, color: Colors.brown[700]),
+                ),
+              );
+            } else if (snapshot.hasData) {
+              final notifications = snapshot.data!;
+              if (notifications.isEmpty) {
+                return Center(
+                  child: Text(
+                    'Aún no hay notificaciones.',
+                    style: TextStyle(fontSize: 18, color: Colors.brown[700]),
+                  ),
+                );
+              } else {
+                return ListView.builder(
+                  itemCount: notifications.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final notificacion = notifications[index];
+                    return ListTile(
+                      leading: _buildAvatarFromBase64(notificacion.foto),
+                      title: Text(
+                        notificacion.contenido,
+                        style: TextStyle(color: Colors.brown[700]),
+                      ),
+                      subtitle: Text(
+                        'Recibido el ${notificacion.mensajeLlegada.toLocal()}',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      trailing: notificacion.leido
+                          ? Icon(Icons.check, color: Colors.green)
+                          : Icon(Icons.circle, color: Colors.red, size: 12),
+                      onTap: () {
+                        // Al tocar la notificación, la marcamos como leída (si aún no lo está)
+                        if (!notificacion.leido) {
+                          ApiService()
+                              .marcarNotificacionComoLeida(notificacion.id)
+                              .then((_) {
+                            setState(() {
+                              notificacion.leido = true;
+                            });
+                          }).catchError((error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error al actualizar notificación: $error'),
+                              ),
+                            );
+                          });
+                        }
+                      },
+                    );
+                  },
+                );
+              }
+            }
+            // Caso por defecto
+            return Center(
+              child: Text(
+                'Aún no hay notificaciones.',
+                style: TextStyle(fontSize: 18, color: Colors.brown[700]),
+              ),
+            );
+          },
         ),
       ),
       backgroundColor: Color(0xFFF9F6E8),

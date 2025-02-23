@@ -92,3 +92,53 @@ class Data {
     };
   }
 }
+
+class Notificacion {
+  final String id;
+  final String idUsuario;
+  final String idMascota;
+  final DateTime mensajeLlegada;
+  final String contenido;
+  bool leido;
+  final String? foto; // Puede ser null si no hay foto
+
+  Notificacion({
+    required this.id,
+    required this.idUsuario,
+    required this.idMascota,
+    required this.mensajeLlegada,
+    required this.contenido,
+    this.leido = false,
+    this.foto,
+  });
+
+  factory Notificacion.fromJson(Map<String, dynamic> json) {
+    String getId() {
+      if (json['_id'] is Map && json['_id']['\$oid'] != null) {
+        return json['_id']['\$oid'];
+      }
+      return json['_id']?.toString() ?? '';
+    }
+
+    return Notificacion(
+      id: getId(),
+      idUsuario: json['id_usuario'] ?? '',
+      idMascota: json['id_mascota'] ?? '',
+      mensajeLlegada: DateTime.parse(json['mensaje_llegada'] ?? DateTime.now().toIso8601String()),
+      contenido: json['contenido'] ?? '',
+      leido: json['leido'] ?? false,
+      foto: json['foto'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id_usuario': idUsuario,
+      'id_mascota': idMascota,
+      'mensaje_llegada': mensajeLlegada.toIso8601String(),
+      'contenido': contenido,
+      'leido': leido,
+      'foto': foto,
+    };
+  }
+}
