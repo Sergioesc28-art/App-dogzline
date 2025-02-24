@@ -230,31 +230,33 @@ class _MatchesScreenState extends State<MatchesScreen> {
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        imageBytes != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.memory(
-                  imageBytes,
-                  fit: BoxFit.cover,
-                  width: 150,
-                  height: 150,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Error mostrando imagen: $error');
-                    return Container(
-                      width: 150,
-                      height: 150,
-                      color: Colors.grey.shade300,
-                      child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
-                    );
-                  },
-                ),
-              )
-            : Container(
-                width: 150,
-                height: 150,
-                color: Colors.grey.shade300,
-                child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
-              ),
+        Flexible(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: imageBytes != null
+                ? Image.memory(
+                    imageBytes,
+                    fit: BoxFit.cover,
+                    width: 150,
+                    height: 150,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error mostrando imagen: $error');
+                      return Container(
+                        width: 150,
+                        height: 150,
+                        color: Colors.grey.shade300,
+                        child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+                      );
+                    },
+                  )
+                : Container(
+                    width: 150,
+                    height: 150,
+                    color: Colors.grey.shade300,
+                    child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+                  ),
+          ),
+        ),
         SizedBox(height: 10),
         Text(
           dog['name'] ?? 'Nombre no disponible',
@@ -269,7 +271,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
     ),
   );
 }
-
 
   @override
   Widget build(BuildContext context) {
