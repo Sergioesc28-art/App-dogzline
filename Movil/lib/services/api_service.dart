@@ -154,39 +154,44 @@ class ApiService {
       throw Exception('Error al obtener las mascotas: $e');
     }
   }
-
-  // Obtener notificaciones del usuario
+  // Método para obtener las notificaciones por usuario
   Future<List<Notificacion>> getNotificaciones() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-      if (token == null) {
-        throw Exception('Token no encontrado');
-      }
-
-      final response = await _dio.get(
-        'https://dogzline-1.onrender.com/api/notificaciones',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        List<Notificacion> notificaciones = (response.data as List)
-            .map((json) => Notificacion.fromJson(json))
-            .toList();
-        return notificaciones;
-      } else {
-        throw Exception('Error al obtener las notificaciones');
-      }
-    } catch (e) {
-      throw Exception('Error al obtener las notificaciones: $e');
+    if (token == null) {
+      throw Exception('Token no encontrado');
     }
-  }
 
+    print('Token: $token'); // Para debuggear
+
+    final response = await _dio.get(
+      'https://dogzline-1.onrender.com/api/notificaciones', // URL correcta
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token', // Token JWT en el encabezado
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
+
+    print('Response status: ${response.statusCode}'); // Para debuggear
+    print('Response data: ${response.data}'); // Para debuggear
+
+    if (response.statusCode == 200) {
+      List<Notificacion> notificaciones = (response.data as List)
+          .map((json) => Notificacion.fromJson(json))
+          .toList();
+      return notificaciones;
+    } else {
+      throw Exception('Error al obtener las notificaciones: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error detallado: $e'); // Para debuggear
+    throw Exception('Error al obtener las notificaciones: $e');
+  }
+}
   // Crear una nueva notificación
   Future<Notificacion> createNotificacion(Notificacion notificacion) async {
     try {

@@ -313,20 +313,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
     _futureNotificaciones = ApiService().getNotificaciones();
   }
 
-  // Función para refrescar las notificaciones
   Future<void> _refreshNotificaciones() async {
     setState(() {
       _futureNotificaciones = ApiService().getNotificaciones();
     });
   }
 
-  // Función auxiliar para construir el avatar con la imagen del perro que dio like
   Widget _buildAvatarFromBase64(String? base64String) {
     if (base64String == null || base64String.isEmpty) {
       return Icon(Icons.notifications, color: Colors.brown[700]);
     }
     try {
-      // Si la cadena tiene un prefijo (por ejemplo, 'data:image/png;base64,'), lo eliminamos.
       if (base64String.contains('base64,')) {
         base64String = base64String.split('base64,').last;
       }
@@ -366,15 +363,30 @@ class _NotificationsPageState extends State<NotificationsPage> {
         onRefresh: _refreshNotificaciones,
         child: FutureBuilder<List<Notificacion>>(
           future: _futureNotificaciones,
-          builder:
-              (BuildContext context, AsyncSnapshot<List<Notificacion>> snapshot) {
+          builder: (BuildContext context, AsyncSnapshot<List<Notificacion>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
+              // Manejo de errores más detallado
+              String errorMessage = 'Error al cargar las notificaciones.';
+              if (snapshot.error is Exception) {
+                errorMessage = (snapshot.error as Exception).toString();
+              }
               return Center(
-                child: Text(
-                  'Error: ${snapshot.error}',
-                  style: TextStyle(fontSize: 18, color: Colors.brown[700]),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red, size: 60),
+                      SizedBox(height: 16),
+                      Text(
+                        errorMessage,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.brown[700]),
+                      ),
+                    ],
+                  ),
                 ),
               );
             } else if (snapshot.hasData) {
@@ -405,11 +417,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ? Icon(Icons.check, color: Colors.green)
                           : Icon(Icons.circle, color: Colors.red, size: 12),
                       onTap: () {
-                        // Al tocar la notificación, la marcamos como leída (si aún no lo está)
                         if (!notificacion.leido) {
-                          ApiService()
-                              .marcarNotificacionComoLeida(notificacion.id)
-                              .then((_) {
+                          ApiService().marcarNotificacionComoLeida(notificacion.id).then((_) {
                             setState(() {
                               notificacion.leido = true;
                             });
@@ -427,7 +436,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 );
               }
             }
-            // Caso por defecto
             return Center(
               child: Text(
                 'Aún no hay notificaciones.',
