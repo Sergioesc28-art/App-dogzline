@@ -92,10 +92,10 @@ class _MatchScreenState extends State<MatchScreen> {
     try {
       final notificacion = Notificacion(
         id: '',
-        idUsuario: profile['idUsuario'] ?? '',
+        idUsuario: profile['idUsuario'] ?? '', // Ahora se obtiene correctamente
         idMascota: profile['id'] ?? '',
         mensajeLlegada: DateTime.now(),
-        contenido: "¡Te han dado un like en tu mascota: ${profile['nombre']}!",
+        contenido: "¡Te han dado un like en tu mascota: ${profile['name']}!",
         leido: false,
         foto: profile['fotos'],
       );
@@ -115,13 +115,19 @@ class _MatchScreenState extends State<MatchScreen> {
       dogs.shuffle();
 
       return dogs.map((dog) {
+        // Prepara la imagen en formato Base64
         String imageData = dog.fotos ?? '';
         if (imageData.isNotEmpty && !imageData.startsWith('data:image')) {
           imageData = 'data:image/png;base64,$imageData';
         }
 
+        // Regresamos un Map que incluye todos los campos necesarios
         return {
-          'image': imageData,
+          'id': dog.id, // ID único de la mascota
+          'idUsuario':
+              dog.idUsuario, // ID del dueño, necesario para notificaciones
+          'fotos':
+              imageData, // Usamos la clave 'fotos' para que _sendLikeNotification la encuentre
           'name': dog.nombre,
           'age': dog.edad.toString(),
           'raza': dog.raza,
