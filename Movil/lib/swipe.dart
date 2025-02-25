@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'models/data_model.dart';
 import 'services/api_service.dart';
 import 'matches_screen.dart';
+import 'dog_detail_screen.dart';
 import 'dart:math';
 
 void main() {
@@ -132,6 +133,12 @@ class _MatchScreenState extends State<MatchScreen> {
           'age': dog.edad.toString(),
           'raza': dog.raza,
           'caracteristicas': dog.caracteristicas,
+          'sexo': dog.sexo,
+          'color': dog.color,
+          'vacunas': dog.vacunas,
+          'certificado': dog.certificado,
+          'comportamiento': dog.comportamiento,
+          'distancia': dog.distancia,
         };
       }).toList();
     } catch (e) {
@@ -187,7 +194,7 @@ class _MatchScreenState extends State<MatchScreen> {
 
   Widget buildProfileCard(Map<String, dynamic> profile) {
     return FutureBuilder<Uint8List?>(
-      future: _getImageBytes(profile['image']),
+      future: _getImageBytes(profile['fotos']),
       builder: (context, snapshot) {
         Widget imageWidget;
 
@@ -216,57 +223,83 @@ class _MatchScreenState extends State<MatchScreen> {
           );
         }
 
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 5,
-          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AspectRatio(
-                aspectRatio: 1,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Container(
-                    color: Colors.white,
-                    child: imageWidget,
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DogDetailScreen(
+                  dog: Data(
+                    id: profile['id'],
+                    nombre: profile['name'],
+                    edad: int.parse(profile['age']),
+                    raza: profile['raza'],
+                    sexo: profile['sexo'],
+                    color: profile['color'],
+                    vacunas: profile['vacunas'],
+                    caracteristicas: profile['caracteristicas'],
+                    certificado: profile['certificado'],
+                    fotos: profile['fotos'],
+                    comportamiento: profile['comportamiento'],
+                    idUsuario: profile['idUsuario'],
+                    distancia: profile['distancia'],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Text(
-                      profile['name'] ?? 'Nombre no disponible',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.brown,
-                      ),
+            );
+          },
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 5,
+            margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    child: Container(
+                      color: Colors.white,
+                      child: imageWidget,
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      profile['age'] ?? 'Edad no disponible',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.brown.shade400,
-                      ),
-                    ),
-                    if (profile['raza'] != null)
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
                       Text(
-                        profile['raza'],
+                        profile['name'] ?? 'Nombre no disponible',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.brown.shade300,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.brown,
                         ),
                       ),
-                  ],
+                      SizedBox(height: 4),
+                      Text(
+                        profile['age'] ?? 'Edad no disponible',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.brown.shade400,
+                        ),
+                      ),
+                      if (profile['raza'] != null)
+                        Text(
+                          profile['raza'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.brown.shade300,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

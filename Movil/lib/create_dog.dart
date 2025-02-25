@@ -41,6 +41,7 @@ class _CreateDogPageState extends State<CreateDogPage> {
   final List<String> selectedCertificates = [];
   final ApiService _apiService = ApiService();
   String? userId;
+  String? selectedGender;
 
   @override
   void initState() {
@@ -118,7 +119,8 @@ class _CreateDogPageState extends State<CreateDogPage> {
     if (nameController.text.isEmpty ||
         ageController.text.isEmpty ||
         breedController.text.isEmpty ||
-        colorController.text.isEmpty) {
+        colorController.text.isEmpty ||
+        selectedGender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Por favor completa todos los campos requeridos')),
@@ -132,7 +134,7 @@ class _CreateDogPageState extends State<CreateDogPage> {
         nombre: nameController.text,
         edad: int.tryParse(ageController.text) ?? 0,
         raza: breedController.text,
-        sexo: 'Macho', // Deberías tener un selector para esto
+        sexo: selectedGender!, // Usar el género seleccionado
         color: colorController.text,
         vacunas: selectedVaccines.join(', '), // Convertimos array a string
         caracteristicas: 'Amigable',
@@ -174,9 +176,10 @@ class _CreateDogPageState extends State<CreateDogPage> {
         title: const Text(
           'Crear perro',
           style: TextStyle(
-            fontFamily: 'Cursive',
             fontSize: 24,
             color: Colors.brown,
+            fontFamily: 'Roboto', // Especifica la fuente Roboto
+            fontWeight: FontWeight.bold, // Aumenta el grosor del texto
           ),
         ),
         centerTitle: true,
@@ -227,10 +230,15 @@ class _CreateDogPageState extends State<CreateDogPage> {
               options: ['Pedigrí', 'Adiestramiento'],
               selectedOptions: selectedCertificates,
             ),
-            _buildMultiSelectField(
+            _buildGenderSelectField(
               label: 'Sexo',
               options: ['Macho', 'Hembra'],
-              selectedOptions: selectedCertificates,
+              selectedOption: selectedGender,
+              onChanged: (value) {
+                setState(() {
+                  selectedGender = value;
+                });
+              },
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -277,6 +285,43 @@ class _CreateDogPageState extends State<CreateDogPage> {
                     selectedOptions.add(option);
                   } else {
                     selectedOptions.remove(option);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildGenderSelectField({
+    required String label,
+    required List<String> options,
+    required String? selectedOption,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Wrap(
+          spacing: 8.0,
+          children: options.map((option) {
+            final isSelected = selectedOption == option;
+            return ChoiceChip(
+              label: Text(option),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    onChanged(option);
+                  } else {
+                    onChanged(null);
                   }
                 });
               },
