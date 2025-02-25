@@ -141,7 +141,9 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsScreen()), // Navegar a SettingsScreen
+                MaterialPageRoute(
+                    builder: (context) =>
+                        SettingsScreen()), // Navegar a SettingsScreen
               );
             },
           ),
@@ -180,7 +182,8 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const DialogueScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const DialogueScreen()),
                 );
               },
               child: Container(
@@ -266,19 +269,26 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => MatchScreen()),
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                MatchScreen()),
                                       );
                                     },
                                     child: Column(
                                       children: [
                                         CircleAvatar(
                                           radius: 30,
-                                          backgroundImage: MemoryImage(base64Decode(mascota.fotos!.split(',').last)),
+                                          backgroundImage: MemoryImage(
+                                              base64Decode(mascota.fotos!
+                                                  .split(',')
+                                                  .last)),
                                         ),
                                         SizedBox(height: 8),
                                         Text(
                                           mascota.nombre ?? '',
-                                          style: TextStyle(color: Colors.brown[700]), // Texto café
+                                          style: TextStyle(
+                                              color: Colors
+                                                  .brown[700]), // Texto café
                                         ),
                                       ],
                                     ),
@@ -305,18 +315,40 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  late Future<List<Notificacion>> _futureNotificaciones;
+  Future<List<Notificacion>> _futureNotificaciones = Future.value([]); // Inicializado aquí
 
   @override
   void initState() {
     super.initState();
-    _futureNotificaciones = ApiService().getNotificaciones();
+    _loadUser(); // Llamada correcta a la función
+    IdAndFetchNotifications();
+  }
+
+  Future<void> _loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+    if (userId == null) {
+      print('ID de usuario no encontrado');
+    }
+  }
+
+  Future<void> IdAndFetchNotifications() async { // Cambiado a Future<void>
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+
+    setState(() { // Actualiza el estado después de obtener el userId
+      if (userId != null) {
+        _futureNotificaciones = ApiService().getNotificaciones(userId);
+      } else {
+        print('ID de usuario no encontrado');
+        _futureNotificaciones = Future.value([]);
+      }
+    });
   }
 
   Future<void> _refreshNotificaciones() async {
-    setState(() {
-      _futureNotificaciones = ApiService().getNotificaciones();
-    });
+    await _loadUser(); // Espera a que termine
+    await IdAndFetchNotifications(); // Espera a que termine
   }
 
   Widget _buildAvatarFromBase64(String? base64String) {
@@ -363,11 +395,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
         onRefresh: _refreshNotificaciones,
         child: FutureBuilder<List<Notificacion>>(
           future: _futureNotificaciones,
-          builder: (BuildContext context, AsyncSnapshot<List<Notificacion>> snapshot) {
+          builder: (BuildContext context,
+              AsyncSnapshot<List<Notificacion>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              // Manejo de errores más detallado
               String errorMessage = 'Error al cargar las notificaciones.';
               if (snapshot.error is Exception) {
                 errorMessage = (snapshot.error as Exception).toString();
@@ -383,7 +415,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       Text(
                         errorMessage,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.brown[700]),
+                        style:
+                            TextStyle(fontSize: 16, color: Colors.brown[700]),
                       ),
                     ],
                   ),
@@ -418,14 +451,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           : Icon(Icons.circle, color: Colors.red, size: 12),
                       onTap: () {
                         if (!notificacion.leido) {
-                          ApiService().marcarNotificacionComoLeida(notificacion.id).then((_) {
+                          ApiService()
+                              .marcarNotificacionComoLeida(notificacion.id)
+                              .then((_) {
                             setState(() {
                               notificacion.leido = true;
                             });
                           }).catchError((error) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Error al actualizar notificación: $error'),
+                                content: Text(
+                                    'Error al actualizar notificación: $error'),
                               ),
                             );
                           });

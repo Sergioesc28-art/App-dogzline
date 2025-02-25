@@ -1,13 +1,22 @@
 class User {
+  final String email;
+  final String contrasena;
   final String token;
+  final String role;
 
   User({
+    required this.email,
     required this.token,
+    required this.role,
+    required this.contrasena,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       token: json['token'] ?? '',
+      email: json['email'] ?? '',
+      role: json['role'] ?? '',
+      contrasena: json['contraseña'] ?? '',
     );
   }
 }
@@ -22,7 +31,7 @@ class Data {
   final String vacunas;
   final String caracteristicas;
   final String certificado;
-  final String? fotos; // Permite valores nulos para fotos
+  final String? fotos;
   final String comportamiento;
   final String idUsuario;
   final String distancia;
@@ -68,7 +77,7 @@ class Data {
       vacunas: json['vacunas'] ?? '',
       caracteristicas: json['caracteristicas'] ?? '',
       certificado: json['certificado'] ?? '',
-      fotos: json['fotos'] as String?, // Ahora fotos es una cadena o null
+      fotos: json['fotos'] as String?,
       comportamiento: json['Comportamiento'] ?? '',
       idUsuario: getUserId(),
       distancia: json['distancia'] ?? '',
@@ -96,11 +105,11 @@ class Data {
 class Notificacion {
   final String id;
   final String idUsuario;
-  final String idMascota;
+  final dynamic idMascota; // Cambiado a dynamic
   final DateTime mensajeLlegada;
   final String contenido;
   bool leido;
-  final String? foto; // Puede ser null si no hay foto
+  final String? foto;
 
   Notificacion({
     required this.id,
@@ -113,17 +122,10 @@ class Notificacion {
   });
 
   factory Notificacion.fromJson(Map<String, dynamic> json) {
-    String getId() {
-      if (json['_id'] is Map && json['_id']['\$oid'] != null) {
-        return json['_id']['\$oid'];
-      }
-      return json['_id']?.toString() ?? '';
-    }
-
     return Notificacion(
-      id: getId(),
-      idUsuario: json['id_usuario'] ?? '',
-      idMascota: json['id_mascota'] ?? '',
+      id: json['_id']?.toString() ?? '',
+      idUsuario: json['id_usuario']?.toString() ?? '',
+      idMascota: json['id_mascota'], // Mantenemos como dynamic
       mensajeLlegada: DateTime.parse(json['mensaje_llegada'] ?? DateTime.now().toIso8601String()),
       contenido: json['contenido'] ?? '',
       leido: json['leido'] ?? false,
