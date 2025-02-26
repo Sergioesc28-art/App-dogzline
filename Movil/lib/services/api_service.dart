@@ -2,11 +2,12 @@
 import 'package:dio/dio.dart';
 import '../models/data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Importa shared_preferences
+import 'package:flutter/material.dart';
 
 class ApiService {
   final Dio _dio = Dio();
 
-  // Método de inicio de sesión
+  
 // Método de inicio de sesión
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
@@ -154,8 +155,7 @@ class ApiService {
       throw Exception('Error al obtener las mascotas: $e');
     }
   }
-  // Método para obtener las notificaciones por usuario
-  Future<List<Notificacion>> getNotificaciones() async {
+Future<List<Notificacion>> getNotificaciones(String userId) async {
   try {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -164,32 +164,30 @@ class ApiService {
       throw Exception('Token no encontrado');
     }
 
-    print('Token: $token'); // Para debuggear
-
     final response = await _dio.get(
-      'https://dogzline-1.onrender.com/api/notificaciones', // URL correcta
+      'https://dogzline-1.onrender.com/api/notificaciones/usuario/$userId',
       options: Options(
         headers: {
-          'Authorization': 'Bearer $token', // Token JWT en el encabezado
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       ),
     );
 
-    print('Response status: ${response.statusCode}'); // Para debuggear
-    print('Response data: ${response.data}'); // Para debuggear
+    print("Respuesta del servidor: ${response.data}"); // Debug
 
-    if (response.statusCode == 200) {
+    // Verificar si la respuesta es una lista
+    if (response.data is List) {
       List<Notificacion> notificaciones = (response.data as List)
           .map((json) => Notificacion.fromJson(json))
           .toList();
       return notificaciones;
     } else {
-      throw Exception('Error al obtener las notificaciones: ${response.statusCode}');
+      throw Exception('Error: La respuesta no es una lista de notificaciones');
     }
   } catch (e) {
-    print('Error detallado: $e'); // Para debuggear
-    throw Exception('Error al obtener las notificaciones: $e');
+    print('Error detallado: $e');
+    throw Exception('Error al obtener notificaciones: $e');
   }
 }
   // Crear una nueva notificación
