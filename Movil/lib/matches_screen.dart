@@ -7,8 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart'; // Importa shared_p
 
 class MatchesScreen extends StatefulWidget {
   final List<Map<String, dynamic>> likedDogs;
+  final String profileId; // Añadir el identificador del perfil
 
-  MatchesScreen({required this.likedDogs});
+  MatchesScreen({required this.likedDogs, required this.profileId});
 
   @override
   _MatchesScreenState createState() => _MatchesScreenState();
@@ -17,11 +18,13 @@ class MatchesScreen extends StatefulWidget {
 class _MatchesScreenState extends State<MatchesScreen> {
   int _selectedIndex = 1; // Matches es el segundo ítem en la barra de navegación
   List<Map<String, dynamic>> _recentActivityDogs = [];
+  List<Map<String, dynamic>> _dislikedDogs = []; // Lista para los perros a los que les diste dislike
 
   @override
   void initState() {
     super.initState();
     _loadLikedDogs();
+    _loadDislikedDogs(); // Cargar los perros a los que les diste dislike
   }
 
   void _onItemTapped(int index) {
@@ -39,10 +42,19 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
   Future<void> _loadLikedDogs() async {
     final prefs = await SharedPreferences.getInstance();
-    final likedDogsString = prefs.getString('likedDogs') ?? '[]';
+    final likedDogsString = prefs.getString('likedDogs_${widget.profileId}') ?? '[]';
     final List<dynamic> likedDogsList = jsonDecode(likedDogsString);
     setState(() {
       _recentActivityDogs = likedDogsList.cast<Map<String, dynamic>>();
+    });
+  }
+
+  Future<void> _loadDislikedDogs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dislikedDogsString = prefs.getString('dislikedDogs_${widget.profileId}') ?? '[]';
+    final List<dynamic> dislikedDogsList = jsonDecode(dislikedDogsString);
+    setState(() {
+      _dislikedDogs = dislikedDogsList.cast<Map<String, dynamic>>();
     });
   }
 
@@ -79,17 +91,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DogsListScreen(
-                    title: 'Likes',
-                    dogs: widget.likedDogs,
-                  ),
-                ),
-              );
-            },
+            onPressed: null, // Elimina la función onPressed
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF8B6F47), // Café bajo
               shape: RoundedRectangleBorder(
@@ -111,8 +113,8 @@ class _MatchesScreenState extends State<MatchesScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _buildCategorySection('Actividad Reciente', _recentActivityDogs),
-          _buildCategorySection('Intereses en Común', []),
+          _buildCategorySection('Tus "Me gusta"', _recentActivityDogs),
+          _buildCategorySection('Segunda Oportunidad', _dislikedDogs), // Nueva sección para los perros a los que les diste dislike
           _buildCategorySection('Recomendado', []),
         ],
       ),
@@ -192,85 +194,85 @@ class _MatchesScreenState extends State<MatchesScreen> {
   }
 
   Widget _buildDogProfileCard(Map<String, dynamic> dog) {
-  Uint8List? imageBytes;
-  try {
-    String? imageData = dog['image'];
+    Uint8List? imageBytes;
+    try {
+      String? imageData = dog['fotos'];
 
-    if (imageData != null && imageData.isNotEmpty) {
-      // Extraer la parte base64 si tiene prefijo
-      if (imageData.contains(',')) {
-        imageData = imageData.split(',').last;
+      if (imageData != null && imageData.isNotEmpty) {
+        // Extraer la parte base64 si tiene prefijo
+        if (imageData.contains(',')) {
+          imageData = imageData.split(',').last;
+        }
+
+        // Eliminar espacios en blanco y caracteres no válidos
+        imageData = imageData.replaceAll(RegExp(r'\s+'), '');
+
+        // Decodificar la imagen base64
+        imageBytes = base64Decode(imageData);
       }
-
-      // Eliminar espacios en blanco y caracteres no válidos
-      imageData = imageData.replaceAll(RegExp(r'\s+'), '');
-
-      // Decodificar la imagen base64
-      imageBytes = base64Decode(imageData);
+    } catch (e) {
+      print('Error decodificando imagen base64: $e');
+      imageBytes = null;
     }
-  } catch (e) {
-    print('Error decodificando imagen base64: $e');
-    imageBytes = null;
-  }
 
-  return Container(
-    width: 150,
-    margin: EdgeInsets.symmetric(horizontal: 8),
-    decoration: BoxDecoration(
-      color: Colors.grey.shade200,
-      borderRadius: BorderRadius.circular(15),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.shade400,
-          blurRadius: 4,
-          offset: Offset(2, 2),
-        ),
-      ],
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Flexible(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(15),
-            child: imageBytes != null
-                ? Image.memory(
-                    imageBytes,
-                    fit: BoxFit.cover,
-                    width: 150,
-                    height: 150,
-                    errorBuilder: (context, error, stackTrace) {
-                      print('Error mostrando imagen: $error');
-                      return Container(
-                        width: 150,
-                        height: 150,
-                        color: Colors.grey.shade300,
-                        child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
-                      );
-                    },
-                  )
-                : Container(
-                    width: 150,
-                    height: 150,
-                    color: Colors.grey.shade300,
-                    child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
-                  ),
+    return Container(
+      width: 150,
+      margin: EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade400,
+            blurRadius: 4,
+            offset: Offset(2, 2),
           ),
-        ),
-        SizedBox(height: 10),
-        Text(
-          dog['name'] ?? 'Nombre no disponible',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
-          textAlign: TextAlign.center,
-        ),
-        Text(
-          'Edad: ${dog['age'] ?? 'Edad no disponible'}',
-          style: TextStyle(fontSize: 14, color: Colors.brown.shade400),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: imageBytes != null
+                  ? Image.memory(
+                      imageBytes,
+                      fit: BoxFit.cover,
+                      width: 150,
+                      height: 150,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Error mostrando imagen: $error');
+                        return Container(
+                          width: 150,
+                          height: 150,
+                          color: Colors.grey.shade300,
+                          child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+                        );
+                      },
+                    )
+                  : Container(
+                      width: 150,
+                      height: 150,
+                      color: Colors.grey.shade300,
+                      child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
+                    ),
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            dog['name'] ?? 'Nombre no disponible',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            'Edad: ${dog['age'] ?? 'Edad no disponible'}',
+            style: TextStyle(fontSize: 14, color: Colors.brown.shade400),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -10,6 +10,7 @@ import 'services/api_service.dart';
 import 'matches_screen.dart';
 import 'dog_detail_screen.dart';
 import 'dart:math';
+import 'dog_profile_screen.dart';
 
 void main() {
   runApp(DogzlineApp());
@@ -41,29 +42,48 @@ class _MatchScreenState extends State<MatchScreen> {
   Color _actionColor = Colors.transparent;
   double _opacity = 0.0;
   final ApiService _apiService = ApiService();
-  List<Map<String, dynamic>> _likedDogs = [];
+  Map<String, List<Map<String, dynamic>>> _likedDogsByProfile = {};
+  Map<String, List<Map<String, dynamic>>> _dislikedDogsByProfile = {}; // Añadir esta línea
   final Map<String, Uint8List> _imageCache = {};
 
   @override
   void initState() {
     super.initState();
     _loadLikedDogs();
+    _loadDislikedDogs(); // Añadir esta línea
     _initializeCards();
   }
 
   Future<void> _loadLikedDogs() async {
     final prefs = await SharedPreferences.getInstance();
-    final likedDogsString = prefs.getString('likedDogs') ?? '[]';
-    final List<dynamic> likedDogsList = jsonDecode(likedDogsString);
+    final likedDogsString = prefs.getString('likedDogsByProfile') ?? '{}';
+    final Map<String, dynamic> likedDogsMap = jsonDecode(likedDogsString);
     setState(() {
-      _likedDogs = likedDogsList.cast<Map<String, dynamic>>();
+      _likedDogsByProfile = likedDogsMap.map((key, value) =>
+          MapEntry(key, List<Map<String, dynamic>>.from(value)));
     });
   }
 
-  Future<void> _saveLikedDogs() async {
+  Future<void> _loadDislikedDogs() async {
     final prefs = await SharedPreferences.getInstance();
-    final likedDogsString = jsonEncode(_likedDogs);
-    await prefs.setString('likedDogs', likedDogsString);
+    final dislikedDogsString = prefs.getString('dislikedDogsByProfile') ?? '{}';
+    final Map<String, dynamic> dislikedDogsMap = jsonDecode(dislikedDogsString);
+    setState(() {
+      _dislikedDogsByProfile = dislikedDogsMap.map((key, value) =>
+          MapEntry(key, List<Map<String, dynamic>>.from(value)));
+    });
+  }
+
+  Future<void> _saveLikedDogs(String profileId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedDogsString = jsonEncode(_likedDogsByProfile[profileId]);
+    await prefs.setString('likedDogs_$profileId', likedDogsString);
+  }
+
+  Future<void> _saveDislikedDogs(String profileId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final dislikedDogsString = jsonEncode(_dislikedDogsByProfile[profileId]);
+    await prefs.setString('dislikedDogs_$profileId', dislikedDogsString);
   }
 
   Future<void> _initializeCards() async {
@@ -72,8 +92,8 @@ class _MatchScreenState extends State<MatchScreen> {
     _swipeItems.addAll(dogs.map((profile) {
       return SwipeItem(
         content: profile,
-        likeAction: () => _onLikeAction(profile),
-        nopeAction: () => _showAction("DISLIKE ❌", Colors.red),
+        likeAction: () => _onLikeAction(profile, 'currentProfileId'), // Añadir profileId aquí
+        nopeAction: () => _onDislikeAction(profile, 'currentProfileId'), // Añadir profileId aquí
       );
     }).toList());
 
@@ -82,11 +102,23 @@ class _MatchScreenState extends State<MatchScreen> {
     });
   }
 
-  void _onLikeAction(Map<String, dynamic> profile) {
+  void _onLikeAction(Map<String, dynamic> profile, String profileId) {
     _showAction("LIKE ❤️", Colors.green);
-    _likedDogs.add(profile);
-    _saveLikedDogs();
+    if (!_likedDogsByProfile.containsKey(profileId)) {
+      _likedDogsByProfile[profileId] = [];
+    }
+    _likedDogsByProfile[profileId]!.insert(0, profile); // Añadir al principio de la lista
+    _saveLikedDogs(profileId);
     _sendLikeNotification(profile);
+  }
+
+  void _onDislikeAction(Map<String, dynamic> profile, String profileId) {
+    _showAction("DISLIKE ❌", Colors.red);
+    if (!_dislikedDogsByProfile.containsKey(profileId)) {
+      _dislikedDogsByProfile[profileId] = [];
+    }
+    _dislikedDogsByProfile[profileId]!.insert(0, profile); // Añadir al principio de la lista
+    _saveDislikedDogs(profileId);
   }
 
   Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
@@ -125,10 +157,8 @@ class _MatchScreenState extends State<MatchScreen> {
         // Regresamos un Map que incluye todos los campos necesarios
         return {
           'id': dog.id, // ID único de la mascota
-          'idUsuario':
-              dog.idUsuario, // ID del dueño, necesario para notificaciones
-          'fotos':
-              imageData, // Usamos la clave 'fotos' para que _sendLikeNotification la encuentre
+          'idUsuario': dog.idUsuario, // ID del dueño, necesario para notificaciones
+          'fotos': imageData, // Usamos la clave 'fotos' para que _sendLikeNotification la encuentre
           'name': dog.nombre,
           'age': dog.edad.toString(),
           'raza': dog.raza,
@@ -138,7 +168,7 @@ class _MatchScreenState extends State<MatchScreen> {
           'vacunas': dog.vacunas,
           'certificado': dog.certificado,
           'comportamiento': dog.comportamiento,
-          'distancia': dog.distancia,
+          'distancia': dog.distancia.toString(), // Convertir a String
         };
       }).toList();
     } catch (e) {
@@ -362,7 +392,9 @@ class _MatchScreenState extends State<MatchScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => MatchesScreen(likedDogs: _likedDogs)),
+                    builder: (context) => MatchesScreen(
+                        likedDogs: _likedDogsByProfile['currentProfileId'] ?? [],
+                        profileId: 'currentProfileId')),
               );
             },
           ),
@@ -431,11 +463,37 @@ class _MatchScreenState extends State<MatchScreen> {
               context,
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    MatchesScreen(likedDogs: _likedDogs),
+                    MatchesScreen(
+                        likedDogs:
+                            _likedDogsByProfile['currentProfileId'] ?? [],
+                        profileId: 'currentProfileId'), // Añadir profileId aquí
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                   return child; // Sin animación
                 },
+              ),
+            );
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DogProfileScreen(
+                  dog: Data(
+                    id: 'currentDogId', // Reemplaza con el ID del perro actual
+                    nombre: 'currentDogName', // Reemplaza con el nombre del perro actual
+                    edad: 3, // Reemplaza con la edad del perro actual
+                    raza: 'currentDogBreed', // Reemplaza con la raza del perro actual
+                    sexo: 'currentDogGender', // Reemplaza con el sexo del perro actual
+                    color: 'currentDogColor', // Reemplaza con el color del perro actual
+                    vacunas: 'currentDogVaccines', // Reemplaza con las vacunas del perro actual
+                    caracteristicas: 'currentDogFeatures', // Reemplaza con las características del perro actual
+                    certificado: 'currentDogCertificate', // Reemplaza con el certificado del perro actual
+                    fotos: 'currentDogPhotos', // Reemplaza con las fotos del perro actual
+                    comportamiento: 'currentDogBehavior', // Reemplaza con el comportamiento del perro actual
+                    idUsuario: 'currentDogOwnerId', // Reemplaza con el ID del dueño del perro actual
+                    distancia: '5', // Convertir a String
+                  ),
+                ),
               ),
             );
           }
