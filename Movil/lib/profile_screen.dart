@@ -121,9 +121,14 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         backgroundColor: Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.filter_list, color: Colors.brown[700]),
+          icon: Icon(Icons.settings, color: Colors.brown[700]), // Cambiar el icono de filtrado al de configuración
           onPressed: () {
-            // Acción para abrir filtros
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      SettingsScreen()), // Navegar a SettingsScreen
+            );
           },
         ),
         title: Text(
@@ -136,17 +141,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.brown[700]),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        SettingsScreen()), // Navegar a SettingsScreen
-              );
-            },
-          ),
           IconButton(
             icon: Icon(Icons.notifications, color: Colors.brown[700]),
             onPressed: () {

@@ -29,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final ApiService _apiService = ApiService();
   bool _isPasswordVisible = false;
+  bool _isLoading = false; // Añadir esta línea
 
   final _formKey = GlobalKey<FormState>();
 
@@ -36,6 +37,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Cambiar el estado a cargando
+      });
       _showLoadingDialog();
       try {
         final response = await _apiService.login(
@@ -59,21 +63,29 @@ class _LoginPageState extends State<LoginPage> {
         await prefs.setString('token', token);
 
         // Cerrar el cuadro de diálogo de carga
-        Navigator.of(context).pop();
+        if (mounted) {
+          Navigator.of(context).pop();
 
-        // Navegar a la pantalla de perfil
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ProfileScreen()),
-        );
+          // Navegar a la pantalla de perfil
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ProfileScreen()),
+          );
+        }
       } catch (e) {
         // Cerrar el cuadro de diálogo de carga
-        Navigator.of(context).pop();
+        if (mounted) {
+          Navigator.of(context).pop();
 
-        print('Error de inicio de sesión: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Correo electrónico o contraseña incorrectos')),
-        );
+          print('Error de inicio de sesión: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Correo electrónico o contraseña incorrectos')),
+          );
+        }
+      } finally {
+        setState(() {
+          _isLoading = false; // Cambiar el estado a no cargando
+        });
       }
     }
   }
@@ -216,19 +228,27 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                       SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[300],
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          minimumSize: Size(double.infinity, 50),
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 300),
+                        decoration: BoxDecoration(
+                          color: _isLoading ? Colors.grey[400] : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(
-                          'Iniciar sesión',
-                          style: TextStyle(fontSize: 16),
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            minimumSize: Size(double.infinity, 50),
+                          ),
+                          child: _isLoading
+                              ? CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                )
+                              : Text(
+                                  'Iniciar sesión',
+                                  style: TextStyle(fontSize: 16, color: Colors.black),
+                                ),
                         ),
                       ),
                     ],
