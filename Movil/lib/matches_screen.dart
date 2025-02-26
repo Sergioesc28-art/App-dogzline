@@ -3,7 +3,10 @@ import 'dart:convert'; // Importa dart:convert para usar base64Decode
 import 'dart:typed_data'; // Importa dart:typed_data para usar Uint8List
 import 'swipe.dart'; // Importa la pantalla de MatchScreen (swipe)
 import 'dogs_list_screen.dart'; // Importa la nueva pantalla DogsListScreen
+import 'chat_screen.dart'; // Importa la pantalla de chat
+import 'chat_list_screen.dart'; // Importa la pantalla de lista de chats
 import 'package:shared_preferences/shared_preferences.dart'; // Importa shared_preferences
+import 'models/data_model.dart'; // Importa el modelo de datos
 
 class MatchesScreen extends StatefulWidget {
   final List<Map<String, dynamic>> likedDogs;
@@ -19,6 +22,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
   int _selectedIndex = 1; // Matches es el segundo ítem en la barra de navegación
   List<Map<String, dynamic>> _recentActivityDogs = [];
   List<Map<String, dynamic>> _dislikedDogs = []; // Lista para los perros a los que les diste dislike
+  Data? _currentDog;
 
   @override
   void initState() {
@@ -32,6 +36,16 @@ class _MatchesScreenState extends State<MatchesScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MatchScreen()),
+      );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatListScreen(
+            currentUserId: widget.profileId,
+            matches: _recentActivityDogs,
+          ),
+        ),
       );
     } else {
       setState(() {
@@ -79,7 +93,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
                 SizedBox(height: 10),
                 Text('Nombre', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
                 Text('Edad', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
@@ -184,7 +197,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
           SizedBox(height: 10),
           Text('Nombre', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
           Text('Edad', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
@@ -247,7 +259,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
                           width: 150,
                           height: 150,
                           color: Colors.grey.shade300,
-                          child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
                         );
                       },
                     )
@@ -255,7 +266,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
                       width: 150,
                       height: 150,
                       color: Colors.grey.shade300,
-                      child: Icon(Icons.pets, size: 60, color: Colors.brown.shade600),
                     ),
             ),
           ),
@@ -314,7 +324,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
+              icon: Icon(Icons.message), // Cambiar a icono de mensajería
               label: '',
             ),
           ],

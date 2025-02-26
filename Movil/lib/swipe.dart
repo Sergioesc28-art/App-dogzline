@@ -9,8 +9,9 @@ import 'models/data_model.dart';
 import 'services/api_service.dart';
 import 'matches_screen.dart';
 import 'dog_detail_screen.dart';
+import 'chat_screen.dart';
+import 'chat_list_screen.dart'; // Añadir esta línea
 import 'dart:math';
-import 'dog_profile_screen.dart';
 
 void main() {
   runApp(DogzlineApp());
@@ -477,22 +478,9 @@ class _MatchScreenState extends State<MatchScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DogProfileScreen(
-                  dog: Data(
-                    id: 'currentDogId', // Reemplaza con el ID del perro actual
-                    nombre: 'currentDogName', // Reemplaza con el nombre del perro actual
-                    edad: 3, // Reemplaza con la edad del perro actual
-                    raza: 'currentDogBreed', // Reemplaza con la raza del perro actual
-                    sexo: 'currentDogGender', // Reemplaza con el sexo del perro actual
-                    color: 'currentDogColor', // Reemplaza con el color del perro actual
-                    vacunas: 'currentDogVaccines', // Reemplaza con las vacunas del perro actual
-                    caracteristicas: 'currentDogFeatures', // Reemplaza con las características del perro actual
-                    certificado: 'currentDogCertificate', // Reemplaza con el certificado del perro actual
-                    fotos: 'currentDogPhotos', // Reemplaza con las fotos del perro actual
-                    comportamiento: 'currentDogBehavior', // Reemplaza con el comportamiento del perro actual
-                    idUsuario: 'currentDogOwnerId', // Reemplaza con el ID del dueño del perro actual
-                    distancia: '5', // Convertir a String
-                  ),
+                builder: (context) => ChatListScreen(
+                  currentUserId: 'currentProfileId', // Reemplaza con el ID del usuario actual
+                  matches: [], // Lista vacía
                 ),
               ),
             );
