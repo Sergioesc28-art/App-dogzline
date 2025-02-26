@@ -1,7 +1,53 @@
 import 'package:flutter/material.dart';
-import 'profile_screen.dart'; // Importa el ProfileScreen
+import 'package:shared_preferences/shared_preferences.dart';
+import 'services/api_service.dart';
+import 'models/data_model.dart';
+import 'dart:convert';
 
-class PerfilScreen extends StatelessWidget {
+class PerfilScreen extends StatefulWidget {
+  @override
+  _PerfilScreenState createState() => _PerfilScreenState();
+}
+
+class _PerfilScreenState extends State<PerfilScreen> {
+  final ApiService _apiService = ApiService();
+  List<Data> _mascotas = [];
+  bool _isLoading = true;
+  String _userName = 'Usuario';
+  String _ubicacion = 'Ubicación no disponible';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+    _fetchMascotas();
+  }
+
+  Future<void> _fetchUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userName = prefs.getString('userName') ?? 'Usuario';
+      _ubicacion = prefs.getString('ubicacion') ?? 'Ubicación no disponible';
+    });
+  }
+
+  Future<void> _fetchMascotas() async {
+    try {
+      List<Data> mascotas = await _apiService.getMascotasByUser(1, 10);
+      setState(() {
+        _mascotas = mascotas;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al obtener las mascotas: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,23 +57,8 @@ class PerfilScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          },
+          onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -45,30 +76,20 @@ class PerfilScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 60,
-                      backgroundImage: NetworkImage('https://example.com/profile.jpg'),
+                      backgroundImage: AssetImage('assets/default_profile.png'),
                     ),
                     SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Maria Jose',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(width: 6),
-                        Icon(Icons.verified, color: Colors.blue, size: 22),
-                      ],
-                    ),
                     Text(
-                      '40 años',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      _userName,
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.location_on, color: Colors.grey),
-                        Text('Mérida, Yucatán - A 4 km de distancia'),
+                        SizedBox(width: 4),
+                        Text(_ubicacion),
                       ],
                     ),
                   ],
@@ -81,15 +102,24 @@ class PerfilScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              alignment: WrapAlignment.center,
-              children: [
-                PetCard(imageUrl: 'https://example.com/dog1.jpg', name: 'Chucho', age: 2),
-                PetCard(imageUrl: 'https://example.com/dog2.jpg', name: 'Balto', age: 4),
-              ],
-            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : _mascotas.isEmpty
+                    ? Text('No hay perros registrados')
+                    : Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        alignment: WrapAlignment.center,
+                        children: _mascotas.map((mascota) {
+                          return PetCard(
+                            image: mascota.fotos != null && mascota.fotos!.isNotEmpty
+                                ? MemoryImage(base64Decode(mascota.fotos!.split(',').last))
+                                : AssetImage('assets/default_dog.png') as ImageProvider,
+                            name: mascota.nombre ?? 'Sin nombre',
+                            age: mascota.edad?.toString() ?? '0',
+                          );
+                        }).toList(),
+                      ),
           ],
         ),
       ),
@@ -98,11 +128,11 @@ class PerfilScreen extends StatelessWidget {
 }
 
 class PetCard extends StatelessWidget {
-  final String imageUrl;
+  final ImageProvider image;
   final String name;
-  final int age;
+  final String age;
 
-  PetCard({required this.imageUrl, required this.name, required this.age});
+  PetCard({required this.image, required this.name, required this.age});
 
   @override
   Widget build(BuildContext context) {
@@ -110,10 +140,13 @@ class PetCard extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 40,
-          backgroundImage: NetworkImage(imageUrl),
+          backgroundImage: image,
         ),
         SizedBox(height: 6),
-        Text('$name, $age', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        Text(
+          '$name, $age',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
       ],
     );
   }
