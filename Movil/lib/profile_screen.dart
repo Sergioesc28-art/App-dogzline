@@ -10,6 +10,7 @@ import 'models/data_model.dart'; // Importa el modelo de datos
 import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
 import 'swipe.dart'; // Importa el MatchScreen
 import 'dart:convert'; // Importa dart:convert para decodificar base64
+import 'dog_detail_screen.dart'; // Importa DogDetailScreen
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -121,9 +122,14 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         backgroundColor: Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.filter_list, color: Colors.brown[700]),
+          icon: Icon(Icons.settings, color: Colors.brown[700]), // Cambiar el icono de filtrado al de configuración
           onPressed: () {
-            // Acción para abrir filtros
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      SettingsScreen()), // Navegar a SettingsScreen
+            );
           },
         ),
         title: Text(
@@ -136,17 +142,6 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.brown[700]),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        SettingsScreen()), // Navegar a SettingsScreen
-              );
-            },
-          ),
           IconButton(
             icon: Icon(Icons.notifications, color: Colors.brown[700]),
             onPressed: () {
@@ -260,42 +255,42 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                   _isLoading
                       ? Center(child: CircularProgressIndicator())
                       : _mascotas.isEmpty
-                          ? Center(child: Text('No hay perros registrados.'))
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                ..._mascotas.map((mascota) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                MatchScreen()),
-                                      );
-                                    },
-                                    child: Column(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 30,
-                                          backgroundImage: MemoryImage(
-                                              base64Decode(mascota.fotos!
-                                                  .split(',')
-                                                  .last)),
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          mascota.nombre ?? '',
-                                          style: TextStyle(
-                                              color: Colors
-                                                  .brown[700]), // Texto café
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
-                            ),
+                      ? Center(child: Text('No hay perros registrados.'))
+                      : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ..._mascotas.map((mascota) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      MatchScreen()),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundImage: MemoryImage(
+                                    base64Decode(mascota.fotos!
+                                        .split(',')
+                                        .last)),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                mascota.nombre ?? '',
+                                style: TextStyle(
+                                    color: Colors
+                                        .brown[700]), // Texto café
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -416,7 +411,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         errorMessage,
                         textAlign: TextAlign.center,
                         style:
-                            TextStyle(fontSize: 16, color: Colors.brown[700]),
+                        TextStyle(fontSize: 16, color: Colors.brown[700]),
                       ),
                     ],
                   ),
@@ -450,22 +445,28 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ? Icon(Icons.check, color: Colors.green)
                           : Icon(Icons.circle, color: Colors.red, size: 12),
                       onTap: () {
-                        if (!notificacion.leido) {
-                          ApiService()
-                              .marcarNotificacionComoLeida(notificacion.id)
-                              .then((_) {
-                            setState(() {
-                              notificacion.leido = true;
-                            });
-                          }).catchError((error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    'Error al actualizar notificación: $error'),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DogDetailScreen(
+                              dog: Data(
+                                id: notificacion.idMascota,
+                                nombre: notificacion.contenido,
+                                edad: 0, // Reemplaza con la edad real
+                                raza: '', // Reemplaza con la raza real
+                                sexo: '', // Reemplaza con el sexo real
+                                color: '', // Reemplaza con el color real
+                                vacunas: '', // Reemplaza con las vacunas reales
+                                caracteristicas: '', // Reemplaza con las características reales
+                                certificado: '', // Reemplaza con el certificado real
+                                fotos: notificacion.foto,
+                                comportamiento: '', // Reemplaza con el comportamiento real
+                                idUsuario: notificacion.idUsuario,
+                                distancia: '', // Reemplaza con la distancia real
                               ),
-                            );
-                          });
-                        }
+                            ),
+                          ),
+                        );
                       },
                     );
                   },

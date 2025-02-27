@@ -115,7 +115,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             image: mascota.fotos != null && mascota.fotos!.isNotEmpty
                                 ? MemoryImage(base64Decode(mascota.fotos!.split(',').last))
                                 : AssetImage('assets/default_dog.png') as ImageProvider,
-                            name: mascota.nombre ?? 'Sin nombre',
+                            name: mascota.nombre ??  'Sin nombre',
                             age: mascota.edad?.toString() ?? '0',
                           );
                         }).toList(),
