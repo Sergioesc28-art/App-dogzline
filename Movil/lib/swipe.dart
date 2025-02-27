@@ -386,20 +386,6 @@ class _MatchScreenState extends State<MatchScreen> {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.list),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => MatchesScreen(
-                        likedDogs: _likedDogsByProfile['currentProfileId'] ?? [],
-                        profileId: 'currentProfileId')),
-              );
-            },
-          ),
-        ],
       ),
       body: Stack(
         alignment: Alignment.center,
@@ -452,7 +438,7 @@ class _MatchScreenState extends State<MatchScreen> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.message), // Cambiar el icono de perfil al de mensajería
             label: '',
           ),
         ],

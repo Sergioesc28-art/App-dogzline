@@ -55,10 +55,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
