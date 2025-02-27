@@ -255,42 +255,42 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                   _isLoading
                       ? Center(child: CircularProgressIndicator())
                       : _mascotas.isEmpty
-                          ? Center(child: Text('No hay perros registrados.'))
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                ..._mascotas.map((mascota) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                MatchScreen()),
-                                      );
-                                    },
-                                    child: Column(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 30,
-                                          backgroundImage: MemoryImage(
-                                              base64Decode(mascota.fotos!
-                                                  .split(',')
-                                                  .last)),
-                                        ),
-                                        SizedBox(height: 8),
-                                        Text(
-                                          mascota.nombre ?? '',
-                                          style: TextStyle(
-                                              color: Colors
-                                                  .brown[700]), // Texto café
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
-                            ),
+                      ? Center(child: Text('No hay perros registrados.'))
+                      : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ..._mascotas.map((mascota) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      MatchScreen()),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundImage: MemoryImage(
+                                    base64Decode(mascota.fotos!
+                                        .split(',')
+                                        .last)),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                mascota.nombre ?? '',
+                                style: TextStyle(
+                                    color: Colors
+                                        .brown[700]), // Texto café
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -411,7 +411,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         errorMessage,
                         textAlign: TextAlign.center,
                         style:
-                            TextStyle(fontSize: 16, color: Colors.brown[700]),
+                        TextStyle(fontSize: 16, color: Colors.brown[700]),
                       ),
                     ],
                   ),
