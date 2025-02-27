@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:convert';
 import 'models/data_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'services/api_service.dart'; // Importa ApiService
 
 class DogDetailScreen extends StatelessWidget {
   final Data dog;
@@ -107,9 +109,75 @@ class DogDetailScreen extends StatelessWidget {
             Text('Características: ${dog.caracteristicas}', style: TextStyle(fontSize: 18)),
             Text('Certificado: ${dog.certificado}', style: TextStyle(fontSize: 18)),
             Text('Comportamiento: ${dog.comportamiento}', style: TextStyle(fontSize: 18)),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Lógica para dar like
+                    _handleLike(context);
+                  },
+                  icon: Icon(Icons.thumb_up),
+                  label: Text('Like'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    // Lógica para rechazar
+                    _handleDislike(context);
+                  },
+                  icon: Icon(Icons.thumb_down),
+                  label: Text('Dislike'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  void _handleLike(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+    if (userId != null) {
+      try {
+        // Lógica para dar like
+        await ApiService().darLike(userId, dog.idUsuario);
+        _saveDogToPreferences('likedDogs_$userId', dog);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Like enviado.')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al dar like: $e')),
+        );
+      }
+    }
+  }
+
+  void _handleDislike(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+    if (userId != null) {
+      _saveDogToPreferences('dislikedDogs_$userId', dog);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Dislike enviado.')),
+      );
+    }
+    Navigator.pop(context);
+  }
+
+  void _saveDogToPreferences(String key, Data dog) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> dogs = prefs.getStringList(key) ?? [];
+    dogs.add(jsonEncode(dog.toJson()));
+    await prefs.setStringList(key, dogs);
   }
 }

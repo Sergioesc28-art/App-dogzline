@@ -10,6 +10,7 @@ import 'models/data_model.dart'; // Importa el modelo de datos
 import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
 import 'swipe.dart'; // Importa el MatchScreen
 import 'dart:convert'; // Importa dart:convert para decodificar base64
+import 'dog_detail_screen.dart'; // Importa DogDetailScreen
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -444,22 +445,28 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           ? Icon(Icons.check, color: Colors.green)
                           : Icon(Icons.circle, color: Colors.red, size: 12),
                       onTap: () {
-                        if (!notificacion.leido) {
-                          ApiService()
-                              .marcarNotificacionComoLeida(notificacion.id)
-                              .then((_) {
-                            setState(() {
-                              notificacion.leido = true;
-                            });
-                          }).catchError((error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    'Error al actualizar notificación: $error'),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DogDetailScreen(
+                              dog: Data(
+                                id: notificacion.idMascota,
+                                nombre: notificacion.contenido,
+                                edad: 0, // Reemplaza con la edad real
+                                raza: '', // Reemplaza con la raza real
+                                sexo: '', // Reemplaza con el sexo real
+                                color: '', // Reemplaza con el color real
+                                vacunas: '', // Reemplaza con las vacunas reales
+                                caracteristicas: '', // Reemplaza con las características reales
+                                certificado: '', // Reemplaza con el certificado real
+                                fotos: notificacion.foto,
+                                comportamiento: '', // Reemplaza con el comportamiento real
+                                idUsuario: notificacion.idUsuario,
+                                distancia: '', // Reemplaza con la distancia real
                               ),
-                            );
-                          });
-                        }
+                            ),
+                          ),
+                        );
                       },
                     );
                   },

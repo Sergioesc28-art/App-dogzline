@@ -46,13 +46,22 @@ class _MatchScreenState extends State<MatchScreen> {
   Map<String, List<Map<String, dynamic>>> _likedDogsByProfile = {};
   Map<String, List<Map<String, dynamic>>> _dislikedDogsByProfile = {}; // Añadir esta línea
   final Map<String, Uint8List> _imageCache = {};
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
+    _loadCurrentUserId();
     _loadLikedDogs();
     _loadDislikedDogs(); // Añadir esta línea
     _initializeCards();
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _currentUserId = prefs.getString('userId');
+    });
   }
 
   Future<void> _loadLikedDogs() async {
@@ -93,8 +102,8 @@ class _MatchScreenState extends State<MatchScreen> {
     _swipeItems.addAll(dogs.map((profile) {
       return SwipeItem(
         content: profile,
-        likeAction: () => _onLikeAction(profile, 'currentProfileId'), // Añadir profileId aquí
-        nopeAction: () => _onDislikeAction(profile, 'currentProfileId'), // Añadir profileId aquí
+        likeAction: () => _onLikeAction(profile, _currentUserId!), // Añadir profileId aquí
+        nopeAction: () => _onDislikeAction(profile, _currentUserId!), // Añadir profileId aquí
       );
     }).toList());
 
@@ -452,8 +461,8 @@ class _MatchScreenState extends State<MatchScreen> {
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     MatchesScreen(
                         likedDogs:
-                            _likedDogsByProfile['currentProfileId'] ?? [],
-                        profileId: 'currentProfileId'), // Añadir profileId aquí
+                            _likedDogsByProfile[_currentUserId] ?? [],
+                        profileId: _currentUserId!), // Añadir profileId aquí
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                   return child; // Sin animación
@@ -465,8 +474,8 @@ class _MatchScreenState extends State<MatchScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => ChatListScreen(
-                  currentUserId: 'currentProfileId', // Reemplaza con el ID del usuario actual
-                  matches: [], // Lista vacía
+                  currentUserId: _currentUserId!, // Reemplaza con el ID del usuario actual
+                  matches: _likedDogsByProfile[_currentUserId] ?? [], // Lista de matches
                 ),
               ),
             );

@@ -1,14 +1,13 @@
-// api_service.dart
 import 'package:dio/dio.dart';
 import '../models/data_model.dart';
+import '../models/message_model.dart'; // Importa message_model.dart
 import 'package:shared_preferences/shared_preferences.dart'; // Importa shared_preferences
 import 'package:flutter/material.dart';
 
 class ApiService {
   final Dio _dio = Dio();
 
-  
-// Método de inicio de sesión
+  // Método de inicio de sesión
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
       final response = await _dio.post(
@@ -20,8 +19,7 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        print(
-            'Response data: ${response.data}'); // Imprime la respuesta completa
+        print('Response data: ${response.data}'); // Imprime la respuesta completa
         return response.data;
       } else {
         throw Exception('Failed to login: ${response.data['mensaje']}');
@@ -32,8 +30,7 @@ class ApiService {
   }
 
   // Método de registro
-  Future<void> register(String nombreCompleto, String email, String contrasena,
-      String role) async {
+  Future<void> register(String nombreCompleto, String email, String contrasena, String role) async {
     try {
       final response = await _dio.post(
         'https://dogzline-1.onrender.com/api/usuarios',
@@ -155,41 +152,44 @@ class ApiService {
       throw Exception('Error al obtener las mascotas: $e');
     }
   }
-Future<List<Notificacion>> getNotificaciones(String userId) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
 
-    if (token == null) {
-      throw Exception('Token no encontrado');
+  // Método para obtener las notificaciones de un usuario
+  Future<List<Notificacion>> getNotificaciones(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.get(
+        'https://dogzline-1.onrender.com/api/notificaciones/usuario/$userId',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      print("Respuesta del servidor: ${response.data}"); // Debug
+
+      // Verificar si la respuesta es una lista
+      if (response.data is List) {
+        List<Notificacion> notificaciones = (response.data as List)
+            .map((json) => Notificacion.fromJson(json))
+            .toList();
+        return notificaciones;
+      } else {
+        throw Exception('Error: La respuesta no es una lista de notificaciones');
+      }
+    } catch (e) {
+      print('Error detallado: $e');
+      throw Exception('Error al obtener notificaciones: $e');
     }
-
-    final response = await _dio.get(
-      'https://dogzline-1.onrender.com/api/notificaciones/usuario/$userId',
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      ),
-    );
-
-    print("Respuesta del servidor: ${response.data}"); // Debug
-
-    // Verificar si la respuesta es una lista
-    if (response.data is List) {
-      List<Notificacion> notificaciones = (response.data as List)
-          .map((json) => Notificacion.fromJson(json))
-          .toList();
-      return notificaciones;
-    } else {
-      throw Exception('Error: La respuesta no es una lista de notificaciones');
-    }
-  } catch (e) {
-    print('Error detallado: $e');
-    throw Exception('Error al obtener notificaciones: $e');
   }
-}
+
   // Crear una nueva notificación
   Future<Notificacion> createNotificacion(Notificacion notificacion) async {
     try {
@@ -245,6 +245,134 @@ Future<List<Notificacion>> getNotificaciones(String userId) async {
       }
     } catch (e) {
       throw Exception('Error al actualizar la notificación: $e');
+    }
+  }
+
+  // Método para dar like
+  Future<void> darLike(String userId, String matchUserId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.post(
+        'https://dogzline-1.onrender.com/api/likes',
+        data: {
+          'userId': userId,
+          'matchUserId': matchUserId,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Error al dar like');
+      }
+    } catch (e) {
+      throw Exception('Error al dar like: $e');
+    }
+  }
+
+  // Método para verificar si hay match
+  Future<bool> verificarMatch(String userId, String matchUserId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.get(
+        'https://dogzline-1.onrender.com/api/matches',
+        queryParameters: {
+          'userId': userId,
+          'matchUserId': matchUserId,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data['isMatch'];
+      } else {
+        throw Exception('Error al verificar match');
+      }
+    } catch (e) {
+      throw Exception('Error al verificar match: $e');
+    }
+  }
+
+  // Método para guardar un mensaje
+  Future<void> guardarMensaje(String chatId, String senderId, String content) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.post(
+        'https://dogzline-1.onrender.com/api/mensajes', // Verifica que esta URL sea correcta
+        data: {
+          'chatId': chatId,
+          'senderId': senderId,
+          'content': content,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception('Error al guardar el mensaje');
+      }
+    } catch (e) {
+      throw Exception('Error al guardar el mensaje: $e');
+    }
+  }
+
+  // Método para recuperar mensajes de un chat
+  Future<List<Message>> obtenerMensajes(String chatId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.get(
+        'https://dogzline-1.onrender.com/api/mensajes/$chatId', // Verifica que esta URL sea correcta
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        List<Message> mensajes = (response.data as List)
+            .map((json) => Message.fromJson(json))
+            .toList();
+        return mensajes;
+      } else {
+        throw Exception('Error al obtener los mensajes');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener los mensajes: $e');
     }
   }
 }

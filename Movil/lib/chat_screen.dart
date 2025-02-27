@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'services/api_service.dart';
+import 'models/message_model.dart'; // Importa message_model.dart
 
 class ChatScreen extends StatefulWidget {
   final String currentUserId;
@@ -13,8 +15,28 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
+  final ApiService _apiService = ApiService();
 
-  void _sendMessage() {
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
+    try {
+      List<Message> mensajes = await _apiService.obtenerMensajes(widget.matchUserId);
+      setState(() {
+        _messages.addAll(mensajes);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar los mensajes: $e')),
+      );
+    }
+  }
+
+  void _sendMessage() async {
     if (_controller.text.isEmpty) return;
 
     final message = Message(
@@ -29,6 +51,14 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _controller.clear();
+
+    try {
+      await _apiService.guardarMensaje(widget.matchUserId, widget.currentUserId, message.content);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al enviar el mensaje: $e')),
+      );
+    }
   }
 
   @override
@@ -96,18 +126,4 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-}
-
-class Message {
-  final String senderId;
-  final String receiverId;
-  final String content;
-  final DateTime timestamp;
-
-  Message({
-    required this.senderId,
-    required this.receiverId,
-    required this.content,
-    required this.timestamp,
-  });
 }

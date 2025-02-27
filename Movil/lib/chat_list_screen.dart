@@ -17,9 +17,24 @@ class ChatListScreen extends StatelessWidget {
       body: ListView.builder(
         itemCount: matches.length,
         itemBuilder: (context, index) {
+          final match = matches[index];
+          final matchUserId = match['idUsuario'];
+          final matchUserName = match['nombre'];
+
           return ListTile(
-            title: Text(''), // Dejar en blanco
-            subtitle: Text(''), // Dejar en blanco
+            title: Text(matchUserName ?? 'Usuario desconocido'),
+            subtitle: Text('Tap to chat'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                    currentUserId: currentUserId,
+                    matchUserId: matchUserId,
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
