@@ -70,7 +70,7 @@ class Data {
     return Data(
       id: getId(),
       nombre: json['nombre'] ?? '',
-      edad: json['edad'] ?? 0,
+      edad: json['edad'] ?? 0, // Si no viene, usa 0
       raza: json['raza'] ?? '',
       sexo: json['sexo'] ?? '',
       color: json['color'] ?? '',
@@ -83,7 +83,6 @@ class Data {
       distancia: json['distancia'] ?? '',
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'nombre': nombre,
@@ -105,7 +104,7 @@ class Data {
 class Notificacion {
   final String id;
   final String idUsuario;
-  final dynamic idMascota; // Cambiado a dynamic
+  final Data? idMascota; // Usaremos Data para representar idMascota
   final DateTime mensajeLlegada;
   final String contenido;
   bool leido;
@@ -114,7 +113,7 @@ class Notificacion {
   Notificacion({
     required this.id,
     required this.idUsuario,
-    required this.idMascota,
+    this.idMascota,
     required this.mensajeLlegada,
     required this.contenido,
     this.leido = false,
@@ -125,22 +124,57 @@ class Notificacion {
     return Notificacion(
       id: json['_id']?.toString() ?? '',
       idUsuario: json['id_usuario']?.toString() ?? '',
-      idMascota: json['id_mascota'], // Mantenemos como dynamic
+      idMascota: json['id_mascota'] is Map<String, dynamic> // Verifica si es un objeto
+          ? Data.fromJson(json['id_mascota'])
+          : null, // Si es un string, lo ignora o lo maneja de otra forma
       mensajeLlegada: DateTime.parse(json['mensaje_llegada'] ?? DateTime.now().toIso8601String()),
       contenido: json['contenido'] ?? '',
       leido: json['leido'] ?? false,
-      foto: json['foto'] as String?,
+      foto: json['foto']?.toString(),
     );
   }
 
+
   Map<String, dynamic> toJson() {
     return {
+      '_id': id,
       'id_usuario': idUsuario,
-      'id_mascota': idMascota,
+      'id_mascota': idMascota?.toJson(), // Utilizando el método toJson() de Data
       'mensaje_llegada': mensajeLlegada.toIso8601String(),
       'contenido': contenido,
       'leido': leido,
       'foto': foto,
     };
+  }
+}
+class Match {
+  final String id;
+  final String idUsuario1;
+  final String nombreUsuario1;
+  final String idUsuario2;
+  final String nombreUsuario2;
+  final String idEncuentro;
+  final DateTime fechaMatch;
+
+  Match({
+    required this.id,
+    required this.idUsuario1,
+    required this.nombreUsuario1,
+    required this.idUsuario2,
+    required this.nombreUsuario2,
+    required this.idEncuentro,
+    required this.fechaMatch,
+  });
+
+  factory Match.fromJson(Map<String, dynamic> json) {
+    return Match(
+      id: json['_id'],
+      idUsuario1: json['id_usuario1']['_id'],  // Ahora es un objeto con los datos del usuario
+      nombreUsuario1: json['id_usuario1']['nombre'],
+      idUsuario2: json['id_usuario2']['_id'],
+      nombreUsuario2: json['id_usuario2']['nombre'],
+      idEncuentro: json['id_encuentro'],
+      fechaMatch: DateTime.parse(json['fecha_match']),
+    );
   }
 }

@@ -122,7 +122,9 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         backgroundColor: Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.settings, color: Colors.brown[700]), // Cambiar el icono de filtrado al de configuración
+          icon: Icon(Icons.settings,
+              color: Colors.brown[
+                  700]), // Cambiar el icono de filtrado al de configuración
           onPressed: () {
             Navigator.push(
               context,
@@ -255,42 +257,42 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                   _isLoading
                       ? Center(child: CircularProgressIndicator())
                       : _mascotas.isEmpty
-                      ? Center(child: Text('No hay perros registrados.'))
-                      : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ..._mascotas.map((mascota) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      MatchScreen()),
-                            );
-                          },
-                          child: Column(
-                            children: [
-                              CircleAvatar(
-                                radius: 30,
-                                backgroundImage: MemoryImage(
-                                    base64Decode(mascota.fotos!
-                                        .split(',')
-                                        .last)),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                mascota.nombre ?? '',
-                                style: TextStyle(
-                                    color: Colors
-                                        .brown[700]), // Texto café
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ],
-                  ),
+                          ? Center(child: Text('No hay perros registrados.'))
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                ..._mascotas.map((mascota) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                MatchScreen()),
+                                      );
+                                    },
+                                    child: Column(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 30,
+                                          backgroundImage: MemoryImage(
+                                              base64Decode(mascota.fotos!
+                                                  .split(',')
+                                                  .last)),
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          mascota.nombre ?? '',
+                                          style: TextStyle(
+                                              color: Colors
+                                                  .brown[700]), // Texto café
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ],
+                            ),
                 ],
               ),
             ),
@@ -310,40 +312,37 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  Future<List<Notificacion>> _futureNotificaciones = Future.value([]); // Inicializado aquí
+  Future<List<Notificacion>> _futureNotificaciones = Future.value([]);
 
   @override
   void initState() {
     super.initState();
-    _loadUser(); // Llamada correcta a la función
     IdAndFetchNotifications();
   }
 
-  Future<void> _loadUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    if (userId == null) {
-      print('ID de usuario no encontrado');
+  Future<void> IdAndFetchNotifications() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      print("User ID almacenado: $userId");
+
+      setState(() {
+        if (userId != null) {
+          _futureNotificaciones = ApiService().getNotificaciones(userId);
+        } else {
+          _futureNotificaciones = Future.value([]);
+        }
+      });
+    } catch (e) {
+      print("Error en IdAndFetchNotifications: $e");
+      setState(() {
+        _futureNotificaciones = Future.error(e);
+      });
     }
   }
 
-  Future<void> IdAndFetchNotifications() async { // Cambiado a Future<void>
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-
-    setState(() { // Actualiza el estado después de obtener el userId
-      if (userId != null) {
-        _futureNotificaciones = ApiService().getNotificaciones(userId);
-      } else {
-        print('ID de usuario no encontrado');
-        _futureNotificaciones = Future.value([]);
-      }
-    });
-  }
-
   Future<void> _refreshNotificaciones() async {
-    await _loadUser(); // Espera a que termine
-    await IdAndFetchNotifications(); // Espera a que termine
+    await IdAndFetchNotifications();
   }
 
   Widget _buildAvatarFromBase64(String? base64String) {
@@ -359,7 +358,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
         backgroundImage: MemoryImage(decodedBytes),
       );
     } catch (e) {
-      print("Error al decodificar la imagen: $e");
       return Icon(Icons.error, color: Colors.red);
     }
   }
@@ -390,99 +388,68 @@ class _NotificationsPageState extends State<NotificationsPage> {
         onRefresh: _refreshNotificaciones,
         child: FutureBuilder<List<Notificacion>>(
           future: _futureNotificaciones,
-          builder: (BuildContext context,
-              AsyncSnapshot<List<Notificacion>> snapshot) {
+          builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              String errorMessage = 'Error al cargar las notificaciones.';
-              if (snapshot.error is Exception) {
-                errorMessage = (snapshot.error as Exception).toString();
-              }
               return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red, size: 60),
-                      SizedBox(height: 16),
-                      Text(
-                        errorMessage,
-                        textAlign: TextAlign.center,
-                        style:
-                        TextStyle(fontSize: 16, color: Colors.brown[700]),
-                      ),
-                    ],
-                  ),
-                ),
+                child: Text('Error al cargar las notificaciones.'),
               );
             } else if (snapshot.hasData) {
               final notifications = snapshot.data!;
               if (notifications.isEmpty) {
                 return Center(
-                  child: Text(
-                    'Aún no hay notificaciones.',
-                    style: TextStyle(fontSize: 18, color: Colors.brown[700]),
-                  ),
+                  child: Text('Aún no hay notificaciones.'),
                 );
-              } else {
-                return ListView.builder(
-                  itemCount: notifications.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final notificacion = notifications[index];
-                    return ListTile(
-                      leading: _buildAvatarFromBase64(notificacion.foto),
-                      title: Text(
-                        notificacion.contenido,
-                        style: TextStyle(color: Colors.brown[700]),
-                      ),
-                      subtitle: Text(
-                        'Recibido el ${notificacion.mensajeLlegada.toLocal()}',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      trailing: notificacion.leido
-                          ? Icon(Icons.check, color: Colors.green)
-                          : Icon(Icons.circle, color: Colors.red, size: 12),
-                      onTap: () {
+              }
+              return ListView.builder(
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notificacion = notifications[index];
+                  final mascota = notificacion.idMascota;
+
+                  return ListTile(
+                    leading: _buildAvatarFromBase64(notificacion.foto),
+                    title: Text(notificacion.contenido),
+                    subtitle: Text(
+                      'Recibido el ${notificacion.mensajeLlegada.toLocal()}',
+                    ),
+                    trailing: notificacion.leido
+                        ? Icon(Icons.check, color: Colors.green)
+                        : Icon(Icons.circle, color: Colors.red, size: 12),
+                    onTap: () {
+                      if (notificacion.idMascota != null) {
+                        // Marcar como leída la notificación
+                        ApiService().marcarNotificacionComoLeida(notificacion.id);
+
+                        // Navegar a la pantalla de detalles
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DogDetailScreen(
-                              dog: Data(
-                                id: notificacion.idMascota,
-                                nombre: notificacion.contenido,
-                                edad: 0, // Reemplaza con la edad real
-                                raza: '', // Reemplaza con la raza real
-                                sexo: '', // Reemplaza con el sexo real
-                                color: '', // Reemplaza con el color real
-                                vacunas: '', // Reemplaza con las vacunas reales
-                                caracteristicas: '', // Reemplaza con las características reales
-                                certificado: '', // Reemplaza con el certificado real
-                                fotos: notificacion.foto,
-                                comportamiento: '', // Reemplaza con el comportamiento real
-                                idUsuario: notificacion.idUsuario,
-                                distancia: '', // Reemplaza con la distancia real
-                              ),
-                            ),
+                                builder: (context) => DogDetailScreen(
+                                    idDogLiked: mascota?.id?.toString() ?? '0'
+                                ),
                           ),
                         );
-                      },
-                    );
-                  },
-                );
-              }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Datos de la mascota no disponibles.'),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              );
             }
             return Center(
-              child: Text(
-                'Aún no hay notificaciones.',
-                style: TextStyle(fontSize: 18, color: Colors.brown[700]),
-              ),
+              child: Text('Aún no hay notificaciones.'),
             );
           },
         ),
       ),
-      backgroundColor: Color(0xFFF9F6E8),
+      backgroundColor: const Color(0xFFF9F6E8),
     );
   }
 }

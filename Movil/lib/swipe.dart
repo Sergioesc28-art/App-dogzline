@@ -132,20 +132,37 @@ class _MatchScreenState extends State<MatchScreen> {
   }
 
   Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
+    if (profile['idUsuario'] == null || profile['idUsuario'].isEmpty) {
+      print("Error: idUsuario vacío, no se puede enviar la notificación.");
+      return;
+    }
     try {
+      print("Enviando notificación con datos: ${profile}"); // Para depurar
       final notificacion = Notificacion(
         id: '',
-        idUsuario: profile['idUsuario'] ?? '', // Ahora se obtiene correctamente
-        idMascota: profile['id'] ?? '',
+        idUsuario: profile['idUsuario'],
+        idMascota: Data(
+          id: profile['id'],
+          nombre: profile['name'],
+          edad: int.tryParse(profile['age']) ?? 0,
+          raza: profile['raza'],
+          sexo: profile['sexo'],
+          color: profile['color'],
+          vacunas: profile['vacunas'],
+          caracteristicas: profile['caracteristicas'],
+          certificado: profile['certificado'],
+          fotos: profile['fotos'],
+          comportamiento: profile['comportamiento'],
+          idUsuario: profile['idUsuario'],
+          distancia: profile['distancia'],
+        ),
         mensajeLlegada: DateTime.now(),
         contenido: "¡Te han dado un like en tu mascota: ${profile['name']}!",
         leido: false,
         foto: profile['fotos'],
       );
-
-      Notificacion createdNotification =
-          await ApiService().createNotificacion(notificacion);
-      print("Notificación enviada: ${createdNotification.toJson()}");
+      await _apiService.createNotificacion(notificacion);
+      print("Notificación enviada correctamente");
     } catch (error) {
       print("Error al enviar notificación de like: $error");
     }

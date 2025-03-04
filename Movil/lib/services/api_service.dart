@@ -158,6 +158,8 @@ class ApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
+      print("Token utilizado: $token");
+      print("User ID utilizado: $userId");
 
       if (token == null) {
         throw Exception('Token no encontrado');
@@ -173,9 +175,10 @@ class ApiService {
         ),
       );
 
-      print("Respuesta del servidor: ${response.data}"); // Debug
+      // Verifica el status de la respuesta
+      print("Status Code: ${response.statusCode}");
+      print("Response Data: ${response.data}");
 
-      // Verificar si la respuesta es una lista
       if (response.data is List) {
         List<Notificacion> notificaciones = (response.data as List)
             .map((json) => Notificacion.fromJson(json))
@@ -185,13 +188,12 @@ class ApiService {
         throw Exception('Error: La respuesta no es una lista de notificaciones');
       }
     } catch (e) {
-      print('Error detallado: $e');
-      throw Exception('Error al obtener notificaciones: $e');
+      print('Error obteniendo notificaciones: $e');
+      rethrow;
     }
   }
-
   // Crear una nueva notificación
-  Future<Notificacion> createNotificacion(Notificacion notificacion) async {
+  Future<Notificacion?> createNotificacion(Notificacion notificacion) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -210,13 +212,18 @@ class ApiService {
         ),
       );
 
+      print("Código de respuesta: ${response.statusCode}");
+      print("Respuesta del servidor: ${response.data}");
+
       if (response.statusCode == 201) {
         return Notificacion.fromJson(response.data);
       } else {
-        throw Exception('Error al crear la notificación');
+        print("Error al crear notificación: ${response.statusMessage}");
+        return null;
       }
     } catch (e) {
-      throw Exception('Error al crear la notificación: $e');
+      print('Excepción al crear la notificación: $e');
+      return null;
     }
   }
 
@@ -249,7 +256,7 @@ class ApiService {
   }
 
   // Método para dar like
-  Future<void> darLike(String userId, String matchUserId) async {
+  Future<void> darLike(String userId, String idMascotaLiked) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -258,29 +265,17 @@ class ApiService {
         throw Exception('Token no encontrado');
       }
 
-      final response = await _dio.post(
-        'https://dogzline-1.onrender.com/api/likes',
-        data: {
-          'userId': userId,
-          'matchUserId': matchUserId,
-        },
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
+      await _dio.post(
+        'https://tu-api-url.com/api/encuentros/like',
+        options: Options(headers: { 'Authorization': 'Bearer $token' }),
+        data: { 'idMascotaLiked': idMascotaLiked },
       );
-
-      if (response.statusCode != 200) {
-        throw Exception('Error al dar like');
-      }
     } catch (e) {
-      throw Exception('Error al dar like: $e');
+      throw Exception('Error al enviar el like: $e');
     }
   }
 
-  // Método para verificar si hay match
-  Future<bool> verificarMatch(String userId, String matchUserId) async {
+  Future<List<dynamic>> getMatchesByUser(String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -290,11 +285,7 @@ class ApiService {
       }
 
       final response = await _dio.get(
-        'https://dogzline-1.onrender.com/api/matches',
-        queryParameters: {
-          'userId': userId,
-          'matchUserId': matchUserId,
-        },
+        'https://dogzline-1.onrender.com/api/matches/$userId',
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
@@ -303,15 +294,14 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return response.data['isMatch'];
+        return response.data; // Asegúrate de mapear esto si tienes un modelo de Match
       } else {
-        throw Exception('Error al verificar match');
+        throw Exception('Error al obtener los matches');
       }
     } catch (e) {
-      throw Exception('Error al verificar match: $e');
+      throw Exception('Error al obtener los matches: $e');
     }
   }
-
   // Método para guardar un mensaje
   Future<void> guardarMensaje(String chatId, String senderId, String content) async {
     try {
@@ -375,4 +365,59 @@ class ApiService {
       throw Exception('Error al obtener los mensajes: $e');
     }
   }
+  Future<Data> getDogById(String id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.get(
+        'https://dogzline-1.onrender.com/api/mascotas/$id',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return Data.fromJson(response.data);
+      } else {
+        throw Exception('Error al obtener la mascota');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener la mascota: $e');
+    }
+  }
+
+  Future<List<Data>> getLikesDeMascota(String dogId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
+      final response = await _dio.get(
+        'https://tu-api-url.com/api/encuentros/likes/$dogId',
+        options: Options(headers: { 'Authorization': 'Bearer $token' }),
+      );
+
+      if (response.statusCode == 200) {
+        return (response.data['likes'] as List)
+            .map((like) => Data.fromJson(like))
+            .toList();
+      } else {
+        throw Exception('Error al obtener los likes');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener los likes: $e');
+    }
+  }
 }
+
+

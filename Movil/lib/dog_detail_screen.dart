@@ -2,39 +2,64 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:convert';
 import 'models/data_model.dart';
+import 'services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'services/api_service.dart'; // Importa ApiService
 
-class DogDetailScreen extends StatelessWidget {
-  final Data dog;
+class DogDetailScreen extends StatefulWidget {
+  final String? idDogLiked; // ID del perro que dio "like" (opcional)
+  final Data? dog; // Objeto completo del perro (opcional)
 
-  const DogDetailScreen({Key? key, required this.dog}) : super(key: key);
+  const DogDetailScreen({Key? key, this.idDogLiked, this.dog})
+      : assert(idDogLiked != null || dog != null, 'Debe proporcionarse idDogLiked o dog'),
+        super(key: key);
 
-  Future<Uint8List?> _getImageBytes(String? imageString) async {
-    if (imageString == null || imageString.isEmpty) {
-      return null;
+  @override
+  _DogDetailScreenState createState() => _DogDetailScreenState();
+}
+
+class _DogDetailScreenState extends State<DogDetailScreen> {
+  Data? likedDog; // Información del perro
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Si se pasa un objeto Data directamente
+    if (widget.dog != null) {
+      likedDog = widget.dog;
+      isLoading = false;
+    } else {
+      _fetchLikedDog(); // Buscar el perro por ID si solo se pasa idDogLiked
     }
+  }
 
+  // Método para obtener el perro que dio "like" por su ID
+  Future<void> _fetchLikedDog() async {
     try {
-      String base64Data = imageString;
-      if (base64Data.contains(',')) {
-        base64Data = base64Data.split(',').last.trim();
-      }
-      base64Data = base64Data.replaceAll(RegExp(r'\s+'), '');
-
-      while (base64Data.length % 4 != 0) {
-        base64Data += '=';
-      }
-
-      final bytes = base64Decode(base64Data);
-      if (bytes.length < 100) {
-        print('Advertencia: Imagen demasiado pequeña (${bytes.length} bytes)');
-        return null;
-      }
-
-      return bytes;
+      print('[DEBUG] Buscando perro con ID: ${widget.idDogLiked}');
+      final dog = await ApiService().getDogById(widget.idDogLiked!);
+      print('[DEBUG] Perro obtenido: ${dog.toJson()}');
+      setState(() {
+        likedDog = dog;
+        isLoading = false;
+      });
     } catch (e) {
-      print('Error decodificando imagen: $e');
+      print('Error al cargar el perro: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  // Decodificar imágenes base64
+  Future<Uint8List?> _getImageBytes(String? imageString) async {
+    if (imageString == null || imageString.isEmpty) return null;
+    try {
+      String base64Data =
+      imageString.contains(',') ? imageString.split(',').last.trim() : imageString;
+      while (base64Data.length % 4 != 0) base64Data += '=';
+      return base64Decode(base64Data);
+    } catch (e) {
+      print('Error decodificando la imagen: $e');
       return null;
     }
   }
@@ -45,95 +70,57 @@ class DogDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.amber.shade100,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Dogzline', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.brown)),
+        title: const Text(
+          'Dogzline',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.brown),
+        ),
       ),
-      body: Padding(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : (likedDog == null)
+          ? const Center(
+        child: Text(
+          'Error al cargar los datos del perro',
+          style: TextStyle(fontSize: 18, color: Colors.red),
+        ),
+      )
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            FutureBuilder<Uint8List?>(
-              future: _getImageBytes(dog.fotos),
-              builder: (context, snapshot) {
-                Widget imageWidget;
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  imageWidget = Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasData && snapshot.data != null) {
-                  imageWidget = Image.memory(
-                    snapshot.data!,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (context, error, stackTrace) {
-                      print('Error mostrando imagen: $error');
-                      return Center(child: Text('Error al cargar la imagen'));
-                    },
-                  );
-                } else {
-                  imageWidget = Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.pets, size: 60, color: Colors.grey),
-                        SizedBox(height: 10),
-                        Text('Imagen no disponible'),
-                      ],
-                    ),
-                  );
-                }
-
-                return AspectRatio(
-                  aspectRatio: 1,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      color: Colors.white,
-                      child: imageWidget,
-                    ),
-                  ),
-                );
-              },
+            _buildDogImage(likedDog!.fotos),
+            const SizedBox(height: 10),
+            Text(
+              likedDog!.nombre,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-            SizedBox(height: 10),
-            Text(dog.nombre, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Text('Edad: ${dog.edad} años', style: TextStyle(fontSize: 18)),
-            Text('Raza: ${dog.raza}', style: TextStyle(fontSize: 18)),
-            Text('Sexo: ${dog.sexo == 'M' ? 'Macho' : 'Hembra'}', style: TextStyle(fontSize: 18)),
-            Text('Color: ${dog.color}', style: TextStyle(fontSize: 18)),
-            Text('Vacunas: ${dog.vacunas}', style: TextStyle(fontSize: 18)),
-            Text('Características: ${dog.caracteristicas}', style: TextStyle(fontSize: 18)),
-            Text('Certificado: ${dog.certificado}', style: TextStyle(fontSize: 18)),
-            Text('Comportamiento: ${dog.comportamiento}', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 16),
+            const SizedBox(height: 10),
+            _buildInfoRow('Edad:', '${likedDog!.edad} años'),
+            _buildInfoRow('Raza:', likedDog!.raza),
+            _buildInfoRow('Sexo:', likedDog!.sexo == 'M' ? 'Macho' : 'Hembra'),
+            _buildInfoRow('Color:', likedDog!.color),
+            _buildInfoRow('Vacunas:', likedDog!.vacunas),
+            _buildInfoRow('Características:', likedDog!.caracteristicas),
+            _buildInfoRow('Comportamiento:', likedDog!.comportamiento),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Lógica para dar like
-                    _handleLike(context);
-                  },
-                  icon: Icon(Icons.thumb_up),
-                  label: Text('Like'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
+                  onPressed: () => _handleLike(context),
+                  icon: const Icon(Icons.thumb_up),
+                  label: const Text('Like'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                 ),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    // Lógica para rechazar
-                    _handleDislike(context);
-                  },
-                  icon: Icon(Icons.thumb_down),
-                  label: Text('Dislike'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
+                  onPressed: () => _handleDislike(context),
+                  icon: const Icon(Icons.thumb_down),
+                  label: const Text('Dislike'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 ),
               ],
             ),
@@ -143,41 +130,67 @@ class DogDetailScreen extends StatelessWidget {
     );
   }
 
+  // Botón "Like"
   void _handleLike(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString('userId');
-    if (userId != null) {
+    if (userId != null && likedDog != null) {
       try {
-        // Lógica para dar like
-        await ApiService().darLike(userId, dog.idUsuario);
-        _saveDogToPreferences('likedDogs_$userId', dog);
+        await ApiService().darLike(userId, likedDog!.idUsuario);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Like enviado.')),
+          const SnackBar(content: Text('¡Like enviado!')),
         );
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al dar like: $e')),
-        );
+        print('Error al enviar like: $e');
       }
     }
   }
 
+  // Botón "Dislike"
   void _handleDislike(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    if (userId != null) {
-      _saveDogToPreferences('dislikedDogs_$userId', dog);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Dislike enviado.')),
-      );
-    }
     Navigator.pop(context);
   }
 
-  void _saveDogToPreferences(String key, Data dog) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> dogs = prefs.getStringList(key) ?? [];
-    dogs.add(jsonEncode(dog.toJson()));
-    await prefs.setStringList(key, dogs);
+  // Mostrar imagen del perro
+  Widget _buildDogImage(String? base64Image) {
+    return FutureBuilder<Uint8List?>(
+      future: _getImageBytes(base64Image),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasData && snapshot.data != null) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.memory(snapshot.data!, fit: BoxFit.cover),
+          );
+        } else {
+          return Container(
+            height: 200,
+            color: Colors.grey[200],
+            child: const Center(
+              child: Text(
+                'Imagen no disponible',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  // Mostrar información clave-valor
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Text('$label ', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Expanded(
+            child: Text(value, style: const TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    );
   }
 }
