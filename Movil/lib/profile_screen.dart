@@ -406,8 +406,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 itemCount: notifications.length,
                 itemBuilder: (context, index) {
                   final notificacion = notifications[index];
-                  final mascota = notificacion.idMascota;
-
                   return ListTile(
                     leading: _buildAvatarFromBase64(notificacion.foto),
                     title: Text(notificacion.contenido),
@@ -418,26 +416,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         ? Icon(Icons.check, color: Colors.green)
                         : Icon(Icons.circle, color: Colors.red, size: 12),
                     onTap: () {
-                      if (notificacion.idMascota != null) {
-                        // Marcar como leída la notificación
-                        ApiService().marcarNotificacionComoLeida(notificacion.id);
+                      // Marcar como leída la notificación
+                      ApiService().marcarNotificacionComoLeida(notificacion.id);
 
-                        // Navegar a la pantalla de detalles
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                                builder: (context) => DogDetailScreen(
-                                    idDogLiked: mascota?.id?.toString() ?? '0'
-                                ),
+                      // Navegar a la pantalla de detalles
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DogDetailScreen(
+                            idDogLiked: notificacion.idMascota,
                           ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Datos de la mascota no disponibles.'),
-                          ),
-                        );
-                      }
+                        ),
+                      );
                     },
                   );
                 },

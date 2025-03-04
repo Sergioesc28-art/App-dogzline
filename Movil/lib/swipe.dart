@@ -131,43 +131,39 @@ class _MatchScreenState extends State<MatchScreen> {
     _saveDislikedDogs(profileId);
   }
 
-  Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
-    if (profile['idUsuario'] == null || profile['idUsuario'].isEmpty) {
-      print("Error: idUsuario vacío, no se puede enviar la notificación.");
-      return;
-    }
-    try {
-      print("Enviando notificación con datos: ${profile}"); // Para depurar
-      final notificacion = Notificacion(
-        id: '',
-        idUsuario: profile['idUsuario'],
-        idMascota: Data(
-          id: profile['id'],
-          nombre: profile['name'],
-          edad: int.tryParse(profile['age']) ?? 0,
-          raza: profile['raza'],
-          sexo: profile['sexo'],
-          color: profile['color'],
-          vacunas: profile['vacunas'],
-          caracteristicas: profile['caracteristicas'],
-          certificado: profile['certificado'],
-          fotos: profile['fotos'],
-          comportamiento: profile['comportamiento'],
-          idUsuario: profile['idUsuario'],
-          distancia: profile['distancia'],
-        ),
-        mensajeLlegada: DateTime.now(),
-        contenido: "¡Te han dado un like en tu mascota: ${profile['name']}!",
-        leido: false,
-        foto: profile['fotos'],
-      );
-      await _apiService.createNotificacion(notificacion);
-      print("Notificación enviada correctamente");
-    } catch (error) {
-      print("Error al enviar notificación de like: $error");
-    }
+Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
+  // Validaciones más estrictas
+  if (profile['idUsuario'] == null || profile['idUsuario'].isEmpty) {
+    print("Error: No se puede enviar notificación sin ID de usuario");
+    return;
   }
 
+  if (profile['id'] == null || profile['id'].isEmpty) {
+    print("Error: No se puede enviar notificación sin ID de mascota");
+    return;
+  }
+
+  try {
+    final notificacion = Notificacion(
+      idUsuario: profile['idUsuario'],
+      idMascota: profile['id'], // Ahora directo, no como objeto Data
+      mensajeLlegada: DateTime.now(),
+      contenido: "¡Te han dado un like en tu mascota: ${profile['name']}!",
+      leido: false,
+      foto: profile['fotos'],
+    );
+
+    final resultado = await _apiService.createNotificacion(notificacion);
+    
+    if (resultado != null) {
+      print("Notificación enviada correctamente");
+    } else {
+      print("No se pudo enviar la notificación");
+    }
+  } catch (error) {
+    print("Error al enviar notificación de like: $error");
+  }
+}
   Future<List<Map<String, dynamic>>> generateDogs() async {
     try {
       final randomPage = Random().nextInt(10) + 1;

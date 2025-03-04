@@ -192,41 +192,49 @@ class ApiService {
       rethrow;
     }
   }
-  // Crear una nueva notificación
-  Future<Notificacion?> createNotificacion(Notificacion notificacion) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+  
+Future<Notificacion?> createNotificacion(Notificacion notificacion) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-      if (token == null) {
-        throw Exception('Token no encontrado');
-      }
+    if (token == null) {
+      throw Exception('Token no encontrado');
+    }
 
-      final response = await _dio.post(
-        'https://dogzline-1.onrender.com/api/notificaciones',
-        data: notificacion.toJson(),
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        ),
-      );
+    // Validación más robusta
+    if (notificacion.idUsuario.isEmpty || notificacion.idMascota.isEmpty) {
+      throw Exception('IDs no pueden estar vacíos');
+    }
 
-      print("Código de respuesta: ${response.statusCode}");
-      print("Respuesta del servidor: ${response.data}");
+    final response = await _dio.post(
+      'https://dogzline-1.onrender.com/api/notificaciones',
+      data: notificacion.toJson(),
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json'
+        },
+      ),
+    );
 
-      if (response.statusCode == 201) {
-        return Notificacion.fromJson(response.data);
-      } else {
-        print("Error al crear notificación: ${response.statusMessage}");
-        return null;
-      }
-    } catch (e) {
-      print('Excepción al crear la notificación: $e');
+    print("Código de respuesta: ${response.statusCode}");
+    print("Respuesta del servidor: ${response.data}");
+
+    if (response.statusCode == 201) {
+      return Notificacion.fromJson(response.data);
+    } else {
+      print("Error al crear notificación: ${response.statusMessage}");
       return null;
     }
+  } on DioException catch (e) {
+    print('Error de red al crear notificación: ${e.response?.data}');
+    return null;
+  } catch (e) {
+    print('Excepción al crear la notificación: $e');
+    return null;
   }
-
+}
   // Actualizar notificación (marcar como leída)
   Future<void> marcarNotificacionComoLeida(String idNotificacion) async {
     try {

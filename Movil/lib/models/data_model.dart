@@ -16,8 +16,17 @@ class User {
       token: json['token'] ?? '',
       email: json['email'] ?? '',
       role: json['role'] ?? '',
-      contrasena: json['contraseña'] ?? '',
+      contrasena: json['contrasena'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'token': token,
+      'email': email,
+      'role': role,
+      'contrasena': contrasena,
+    };
   }
 }
 
@@ -83,8 +92,10 @@ class Data {
       distancia: json['distancia'] ?? '',
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
+      '_id': id,
       'nombre': nombre,
       'edad': edad,
       'raza': raza,
@@ -104,42 +115,42 @@ class Data {
 class Notificacion {
   final String id;
   final String idUsuario;
-  final Data? idMascota; // Usaremos Data para representar idMascota
+  final String idMascota; // Changed from Data? to String
   final DateTime mensajeLlegada;
   final String contenido;
   bool leido;
   final String? foto;
 
   Notificacion({
-    required this.id,
+    this.id = '', // Default empty string
     required this.idUsuario,
-    this.idMascota,
+    required this.idMascota,
     required this.mensajeLlegada,
     required this.contenido,
     this.leido = false,
     this.foto,
   });
 
+  // Add this method to resolve the fromJson error
   factory Notificacion.fromJson(Map<String, dynamic> json) {
     return Notificacion(
       id: json['_id']?.toString() ?? '',
       idUsuario: json['id_usuario']?.toString() ?? '',
-      idMascota: json['id_mascota'] is Map<String, dynamic> // Verifica si es un objeto
-          ? Data.fromJson(json['id_mascota'])
-          : null, // Si es un string, lo ignora o lo maneja de otra forma
-      mensajeLlegada: DateTime.parse(json['mensaje_llegada'] ?? DateTime.now().toIso8601String()),
+      idMascota: json['id_mascota']?.toString() ?? '',
+      mensajeLlegada: json['mensaje_llegada'] != null 
+          ? DateTime.parse(json['mensaje_llegada']) 
+          : DateTime.now(),
       contenido: json['contenido'] ?? '',
       leido: json['leido'] ?? false,
       foto: json['foto']?.toString(),
     );
   }
 
-
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
       'id_usuario': idUsuario,
-      'id_mascota': idMascota?.toJson(), // Utilizando el método toJson() de Data
+      'id_mascota': idMascota,
       'mensaje_llegada': mensajeLlegada.toIso8601String(),
       'contenido': contenido,
       'leido': leido,
@@ -147,6 +158,7 @@ class Notificacion {
     };
   }
 }
+
 class Match {
   final String id;
   final String idUsuario1;
@@ -176,5 +188,21 @@ class Match {
       idEncuentro: json['id_encuentro'],
       fechaMatch: DateTime.parse(json['fecha_match']),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'id_usuario1': {
+        '_id': idUsuario1,
+        'nombre': nombreUsuario1,
+      },
+      'id_usuario2': {
+        '_id': idUsuario2,
+        'nombre': nombreUsuario2,
+      },
+      'id_encuentro': idEncuentro,
+      'fecha_match': fechaMatch.toIso8601String(),
+    };
   }
 }
