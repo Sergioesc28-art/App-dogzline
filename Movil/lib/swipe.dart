@@ -9,8 +9,7 @@ import 'models/data_model.dart';
 import 'services/api_service.dart';
 import 'matches_screen.dart';
 import 'dog_detail_screen.dart';
-import 'chat_screen.dart';
-import 'chat_list_screen.dart'; // Añadir esta línea
+import 'chat_list_screen.dart';
 import 'dart:math';
 
 void main() {
@@ -44,7 +43,7 @@ class _MatchScreenState extends State<MatchScreen> {
   double _opacity = 0.0;
   final ApiService _apiService = ApiService();
   Map<String, List<Map<String, dynamic>>> _likedDogsByProfile = {};
-  Map<String, List<Map<String, dynamic>>> _dislikedDogsByProfile = {}; // Añadir esta línea
+  Map<String, List<Map<String, dynamic>>> _dislikedDogsByProfile = {};
   final Map<String, Uint8List> _imageCache = {};
   String? _currentUserId;
 
@@ -53,7 +52,7 @@ class _MatchScreenState extends State<MatchScreen> {
     super.initState();
     _loadCurrentUserId();
     _loadLikedDogs();
-    _loadDislikedDogs(); // Añadir esta línea
+    _loadDislikedDogs();
     _initializeCards();
   }
 
@@ -84,6 +83,77 @@ class _MatchScreenState extends State<MatchScreen> {
     });
   }
 
+  Future<void> _initializeCards() async {
+    List<Map<String, dynamic>> dogs = await generateDogs();
+    _swipeItems.clear();
+    _swipeItems.addAll(dogs.map((profile) {
+      return SwipeItem(
+        content: profile,
+        likeAction: () {
+          if (_currentUserId != null) {
+            _onLikeAction(profile, _currentUserId!);
+          }
+        },
+        nopeAction: () {
+          if (_currentUserId != null) {
+            _onDislikeAction(profile, _currentUserId!);
+          }
+        },
+      );
+    }).toList());
+
+    setState(() {
+      _matchEngine = MatchEngine(swipeItems: _swipeItems);
+    });
+  }
+
+  void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
+    _showAction("LIKE ❤️", Colors.green);
+    if (!_likedDogsByProfile.containsKey(profileId)) {
+      _likedDogsByProfile[profileId] = [];
+    }
+    _likedDogsByProfile[profileId]!.insert(0, profile);
+    _saveLikedDogs(profileId);
+    _sendLikeNotification(profile);
+
+    // Crear el match automáticamente
+    try {
+      await _apiService.createMatch({'idUsuario': profileId}, profile['id']);
+      if (true) {
+        print("Match creado exitosamente");
+
+        // Crear la conversación automáticamente
+        final conversacion =
+            await _apiService.createConversacion(profile['id']);
+        if (conversacion != null) {
+          print("Conversación creada exitosamente");
+
+          // Redirigir a la lista de chats
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatListScreen(
+                currentUserId: _currentUserId!,
+                matches: _likedDogsByProfile[_currentUserId] ?? [],
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print("Error al crear match o conversación: $e");
+    }
+  }
+
+  void _onDislikeAction(Map<String, dynamic> profile, String profileId) {
+    _showAction("DISLIKE ❌", Colors.red);
+    if (!_dislikedDogsByProfile.containsKey(profileId)) {
+      _dislikedDogsByProfile[profileId] = [];
+    }
+    _dislikedDogsByProfile[profileId]!.insert(0, profile);
+    _saveDislikedDogs(profileId);
+  }
+
   Future<void> _saveLikedDogs(String profileId) async {
     final prefs = await SharedPreferences.getInstance();
     final likedDogsString = jsonEncode(_likedDogsByProfile[profileId]);
@@ -96,74 +166,40 @@ class _MatchScreenState extends State<MatchScreen> {
     await prefs.setString('dislikedDogs_$profileId', dislikedDogsString);
   }
 
-  Future<void> _initializeCards() async {
-    List<Map<String, dynamic>> dogs = await generateDogs();
-    _swipeItems.clear(); // Limpiar la lista antes de agregar nuevos elementos
-    _swipeItems.addAll(dogs.map((profile) {
-      return SwipeItem(
-        content: profile,
-        likeAction: () => _onLikeAction(profile, _currentUserId!), // Añadir profileId aquí
-        nopeAction: () => _onDislikeAction(profile, _currentUserId!), // Añadir profileId aquí
+  Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
+    // Validaciones más estrictas
+    if (profile['idUsuario'] == null || profile['idUsuario'].isEmpty) {
+      print("Error: No se puede enviar notificación sin ID de usuario");
+      return;
+    }
+
+    if (profile['id'] == null || profile['id'].isEmpty) {
+      print("Error: No se puede enviar notificación sin ID de mascota");
+      return;
+    }
+
+    try {
+      final notificacion = Notificacion(
+        idUsuario: profile['idUsuario'],
+        idMascota: profile['id'], // Ahora directo, no como objeto Data
+        mensajeLlegada: DateTime.now(),
+        contenido: "¡Te han dado un like en tu mascota: ${profile['name']}!",
+        leido: false,
+        foto: profile['fotos'],
       );
-    }).toList());
 
-    setState(() {
-      _matchEngine = MatchEngine(swipeItems: _swipeItems);
-    });
-  }
+      final resultado = await _apiService.createNotificacion(notificacion);
 
-  void _onLikeAction(Map<String, dynamic> profile, String profileId) {
-    _showAction("LIKE ❤️", Colors.green);
-    if (!_likedDogsByProfile.containsKey(profileId)) {
-      _likedDogsByProfile[profileId] = [];
+      if (resultado != null) {
+        print("Notificación enviada correctamente");
+      } else {
+        print("No se pudo enviar la notificación");
+      }
+    } catch (error) {
+      print("Error al enviar notificación de like: $error");
     }
-    _likedDogsByProfile[profileId]!.insert(0, profile); // Añadir al principio de la lista
-    _saveLikedDogs(profileId);
-    _sendLikeNotification(profile);
   }
 
-  void _onDislikeAction(Map<String, dynamic> profile, String profileId) {
-    _showAction("DISLIKE ❌", Colors.red);
-    if (!_dislikedDogsByProfile.containsKey(profileId)) {
-      _dislikedDogsByProfile[profileId] = [];
-    }
-    _dislikedDogsByProfile[profileId]!.insert(0, profile); // Añadir al principio de la lista
-    _saveDislikedDogs(profileId);
-  }
-
-Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
-  // Validaciones más estrictas
-  if (profile['idUsuario'] == null || profile['idUsuario'].isEmpty) {
-    print("Error: No se puede enviar notificación sin ID de usuario");
-    return;
-  }
-
-  if (profile['id'] == null || profile['id'].isEmpty) {
-    print("Error: No se puede enviar notificación sin ID de mascota");
-    return;
-  }
-
-  try {
-    final notificacion = Notificacion(
-      idUsuario: profile['idUsuario'],
-      idMascota: profile['id'], // Ahora directo, no como objeto Data
-      mensajeLlegada: DateTime.now(),
-      contenido: "¡Te han dado un like en tu mascota: ${profile['name']}!",
-      leido: false,
-      foto: profile['fotos'],
-    );
-
-    final resultado = await _apiService.createNotificacion(notificacion);
-    
-    if (resultado != null) {
-      print("Notificación enviada correctamente");
-    } else {
-      print("No se pudo enviar la notificación");
-    }
-  } catch (error) {
-    print("Error al enviar notificación de like: $error");
-  }
-}
   Future<List<Map<String, dynamic>>> generateDogs() async {
     try {
       final randomPage = Random().nextInt(10) + 1;
@@ -191,7 +227,7 @@ Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
           'vacunas': dog.vacunas,
           'certificado': dog.certificado,
           'comportamiento': dog.comportamiento,
-          'distancia': dog.distancia.toString(), // Convertir a String
+          'distancia': dog.distancia?.toString() ?? 'No disponible', // Manejo de null
         };
       }).toList();
     } catch (e) {
@@ -313,7 +349,8 @@ Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
                 AspectRatio(
                   aspectRatio: 1,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                     child: Container(
                       color: Colors.white,
                       child: imageWidget,
@@ -460,7 +497,8 @@ Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.message), // Cambiar el icono de perfil al de mensajería
+            icon: Icon(
+                Icons.message), // Cambiar el icono de perfil al de mensajería
             label: '',
           ),
         ],
@@ -473,8 +511,7 @@ Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     MatchesScreen(
-                        likedDogs:
-                            _likedDogsByProfile[_currentUserId] ?? [],
+                        likedDogs: _likedDogsByProfile[_currentUserId] ?? [],
                         profileId: _currentUserId!), // Añadir profileId aquí
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
@@ -487,7 +524,8 @@ Future<void> _sendLikeNotification(Map<String, dynamic> profile) async {
               context,
               MaterialPageRoute(
                 builder: (context) => ChatListScreen(
-                  currentUserId: _currentUserId!, // Reemplaza con el ID del usuario actual
+                  currentUserId:
+                      _currentUserId!, // Reemplaza con el ID del usuario actual
                   matches: _likedDogsByProfile[_currentUserId] ?? [], // Lista de matches
                 ),
               ),

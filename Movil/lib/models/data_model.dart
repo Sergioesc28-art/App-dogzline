@@ -161,31 +161,22 @@ class Notificacion {
 
 class Match {
   final String id;
-  final String idUsuario1;
-  final String nombreUsuario1;
-  final String idUsuario2;
-  final String nombreUsuario2;
-  final String idEncuentro;
+  final String idMascota1;
+  final String idMascota2;
   final DateTime fechaMatch;
 
   Match({
     required this.id,
-    required this.idUsuario1,
-    required this.nombreUsuario1,
-    required this.idUsuario2,
-    required this.nombreUsuario2,
-    required this.idEncuentro,
+    required this.idMascota1,
+    required this.idMascota2,
     required this.fechaMatch,
   });
 
   factory Match.fromJson(Map<String, dynamic> json) {
     return Match(
       id: json['_id'],
-      idUsuario1: json['id_usuario1']['_id'],  // Ahora es un objeto con los datos del usuario
-      nombreUsuario1: json['id_usuario1']['nombre'],
-      idUsuario2: json['id_usuario2']['_id'],
-      nombreUsuario2: json['id_usuario2']['nombre'],
-      idEncuentro: json['id_encuentro'],
+      idMascota1: json['id_mascota1'],
+      idMascota2: json['id_mascota2'],
       fechaMatch: DateTime.parse(json['fecha_match']),
     );
   }
@@ -193,16 +184,93 @@ class Match {
   Map<String, dynamic> toJson() {
     return {
       '_id': id,
-      'id_usuario1': {
-        '_id': idUsuario1,
-        'nombre': nombreUsuario1,
-      },
-      'id_usuario2': {
-        '_id': idUsuario2,
-        'nombre': nombreUsuario2,
-      },
-      'id_encuentro': idEncuentro,
+      'id_mascota1': idMascota1,
+      'id_mascota2': idMascota2,
       'fecha_match': fechaMatch.toIso8601String(),
+    };
+  }
+}
+
+class Conversacion {
+  final String id;
+  final List<String> participantes;
+  final String? ultimoMensaje;
+  final DateTime fechaActualizacion;
+
+  Conversacion({
+    required this.id,
+    required this.participantes,
+    this.ultimoMensaje,
+    required this.fechaActualizacion,
+  });
+
+  factory Conversacion.fromJson(Map<String, dynamic> json) {
+    return Conversacion(
+      id: json['_id'],
+      participantes: List<String>.from(json['participantes']),
+      ultimoMensaje: json['ultimo_mensaje'],
+      fechaActualizacion: DateTime.parse(json['fecha_actualizacion']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'participantes': participantes,
+      'ultimo_mensaje': ultimoMensaje,
+      'fecha_actualizacion': fechaActualizacion.toIso8601String(),
+    };
+  }
+}
+
+class Mensaje {
+  final String id;
+  final String idConversacion;
+  final String emisor;
+  final String receptor;
+  final String contenido;
+  final String tipo;
+  final bool leido;
+  final DateTime fechaCreacion;
+  final DateTime? fechaLeido;
+
+  Mensaje({
+    required this.id,
+    required this.idConversacion,
+    required this.emisor,
+    required this.receptor,
+    required this.contenido,
+    this.tipo = 'texto',
+    this.leido = false,
+    required this.fechaCreacion,
+    this.fechaLeido,
+  });
+
+  factory Mensaje.fromJson(Map<String, dynamic> json) {
+    return Mensaje(
+      id: json['_id'],
+      idConversacion: json['id_conversacion'],
+      emisor: json['emisor'],
+      receptor: json['receptor'],
+      contenido: json['contenido'],
+      tipo: json['tipo'] ?? 'texto',
+      leido: json['leido'] ?? false,
+      fechaCreacion: DateTime.parse(json['fecha_creacion']),
+      fechaLeido: json['fecha_leido'] != null ? DateTime.parse(json['fecha_leido']) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'id_conversacion': idConversacion,
+      'emisor': emisor,
+      'receptor': receptor,
+      'contenido': contenido,
+      'tipo': tipo,
+      'leido': leido,
+      'fecha_creacion': fechaCreacion.toIso8601String(),
+      'fecha_leido': fechaLeido?.toIso8601String(),
     };
   }
 }

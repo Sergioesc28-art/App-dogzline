@@ -1,12 +1,44 @@
 import 'package:flutter/material.dart';
 import 'services/api_service.dart';
-import 'models/message_model.dart'; // Importa message_model.dart
+import 'models/data_model.dart'; 
+
+// Asegúrate de que Message esté definido en data_model.dart
+class Message {
+  final String senderId;
+  final String receiverId;
+  final String content;
+  final DateTime timestamp;
+
+  Message({
+    required this.senderId,
+    required this.receiverId,
+    required this.content,
+    required this.timestamp,
+  });
+
+  // Método para convertir JSON a objeto Message
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
+      senderId: json['id_emisor'] ?? '',
+      receiverId: json['id_receptor'] ?? '',
+      content: json['contenido'] ?? '',
+      timestamp: json['fecha_creacion'] != null 
+                ? DateTime.parse(json['fecha_creacion']) 
+                : DateTime.now(),
+    );
+  }
+}
 
 class ChatScreen extends StatefulWidget {
   final String currentUserId;
   final String matchUserId;
+  final String chatId; // ID de la conversación
 
-  ChatScreen({required this.currentUserId, required this.matchUserId});
+  ChatScreen({
+    required this.currentUserId,
+    required this.matchUserId,
+    required this.chatId,
+  });
 
   @override
   _ChatScreenState createState() => _ChatScreenState();
@@ -25,14 +57,23 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _loadMessages() async {
     try {
-      List<Message> mensajes = await _apiService.obtenerMensajes(widget.matchUserId);
+      List<dynamic> mensajesData = await _apiService.getMensajesByConversacion(widget.chatId); // Cambiado conversacionId a chatId
+      
       setState(() {
-        _messages.addAll(mensajes);
+        _messages.clear();
+        // Convertir los datos a objetos Message
+        for (var json in mensajesData) {
+          _messages.add(Message.fromJson(json));
+        }
+        // Ordenar mensajes por timestamp
+        _messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar los mensajes: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar los mensajes: $e')),
+        );
+      }
     }
   }
 
@@ -53,11 +94,22 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller.clear();
 
     try {
-      await _apiService.guardarMensaje(widget.matchUserId, widget.currentUserId, message.content);
+      // Crear el objeto de datos del mensaje
+      Map<String, dynamic> mensajeData = {
+        'id_conversacion': widget.chatId,
+        'id_emisor': widget.currentUserId,
+        'id_receptor': widget.matchUserId,
+        'contenido': message.content,
+      };
+      
+      // Llamar al método correcto en ApiService
+      await _apiService.createMensaje(mensajeData);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al enviar el mensaje: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al enviar el mensaje: $e')),
+        );
+      }
     }
   }
 
@@ -92,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   subtitle: Align(
                     alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
                     child: Text(
-                      message.timestamp.toLocal().toString(),
+                      message.timestamp.toLocal().toString().substring(0, 16), // Formato más corto para timestamp
                       style: TextStyle(fontSize: 12),
                     ),
                   ),
