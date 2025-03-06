@@ -1,0 +1,2 @@
+C:/Users/carlo/Desktop/dogzline2/App-dogzline/Movil/android/app/.cxx/Debug/434h4o5w/x86/CMakeFiles/edit_cache.dir
+C:/Users/carlo/Desktop/dogzline2/App-dogzline/Movil/android/app/.cxx/Debug/434h4o5w/x86/CMakeFiles/rebuild_cache.dir
