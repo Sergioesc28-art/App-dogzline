@@ -106,49 +106,10 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
             _buildInfoRow('Vacunas:', likedDog!.vacunas),
             _buildInfoRow('Características:', likedDog!.caracteristicas),
             _buildInfoRow('Comportamiento:', likedDog!.comportamiento),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () => _handleLike(context),
-                  icon: const Icon(Icons.thumb_up),
-                  label: const Text('Like'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () => _handleDislike(context),
-                  icon: const Icon(Icons.thumb_down),
-                  label: const Text('Dislike'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                ),
-              ],
-            ),
           ],
         ),
       ),
     );
-  }
-
-  // Botón "Like"
-  void _handleLike(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId');
-    if (userId != null && likedDog != null) {
-      try {
-        await ApiService().darLike(userId, likedDog!.idUsuario);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Like enviado!')),
-        );
-      } catch (e) {
-        print('Error al enviar like: $e');
-      }
-    }
-  }
-
-  // Botón "Dislike"
-  void _handleDislike(BuildContext context) async {
-    Navigator.pop(context);
   }
 
   // Mostrar imagen del perro
