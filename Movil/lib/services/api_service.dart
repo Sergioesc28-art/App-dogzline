@@ -399,8 +399,8 @@ class ApiService {
       throw Exception('Error al obtener los mensajes de la conversación: $e');
     }
   }
-
- Future<String> createConversacion(List<String> participantes) async {
+// Método para crear una conversación
+Future<String> createConversacion(List<String> participantes) async {
   try {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');

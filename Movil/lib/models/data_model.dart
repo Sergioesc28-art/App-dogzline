@@ -196,86 +196,201 @@ class Match {
   }
 }
 
-class Conversacion {
-  final String id;
-  final List<String> participantes;
-  final String? ultimoMensaje;
-  final DateTime fechaActualizacion;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-  Conversacion({
+class ChatUser {
+  final String id;
+  final String nombreCompleto;
+  final String email;
+  final String? photoUrl;
+  final DateTime ultimaConexion;
+  final bool online;
+
+  ChatUser({
     required this.id,
-    required this.participantes,
-    this.ultimoMensaje,
-    required this.fechaActualizacion,
+    required this.nombreCompleto,
+    required this.email,
+    this.photoUrl,
+    required this.ultimaConexion,
+    this.online = false,
   });
 
-  factory Conversacion.fromJson(Map<String, dynamic> json) {
-    return Conversacion(
-      id: json['_id'],
-      participantes: List<String>.from(json['participantes']),
-      ultimoMensaje: json['ultimo_mensaje'],
-      fechaActualizacion: DateTime.parse(json['fecha_actualizacion']),
+  factory ChatUser.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return ChatUser(
+      id: doc.id,
+      nombreCompleto: data['nombreCompleto'] ?? '',
+      email: data['email'] ?? '',
+      photoUrl: data['photoUrl'],
+      ultimaConexion: (data['ultimaConexion'] as Timestamp).toDate(),
+      online: data['online'] ?? false,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
-      '_id': id,
-      'participantes': participantes,
-      'ultimo_mensaje': ultimoMensaje,
-      'fecha_actualizacion': fechaActualizacion.toIso8601String(),
+      'nombreCompleto': nombreCompleto,
+      'email': email,
+      'photoUrl': photoUrl,
+      'ultimaConexion': Timestamp.fromDate(ultimaConexion),
+      'online': online,
     };
   }
 }
 
-class Mensaje {
+class ChatRoom {
   final String id;
-  final String idConversacion;
-  final String emisor;
-  final String receptor;
-  final String contenido;
-  final String tipo;
-  final bool leido;
-  final DateTime fechaCreacion;
-  final DateTime? fechaLeido;
+  final List<String> participantes;
+  final String? ultimoMensaje;
+  final DateTime ultimaActualizacion;
+  final Map<String, bool> leido; // {userId: boolean}
+  final Map<String, ChatInfo> infoParticipantes; // Metadata por participante
 
-  Mensaje({
+  ChatRoom({
     required this.id,
-    required this.idConversacion,
-    required this.emisor,
-    required this.receptor,
-    required this.contenido,
-    this.tipo = 'texto',
-    this.leido = false,
-    required this.fechaCreacion,
-    this.fechaLeido,
+    required this.participantes,
+    this.ultimoMensaje,
+    required this.ultimaActualizacion,
+    required this.leido,
+    required this.infoParticipantes,
   });
 
-  factory Mensaje.fromJson(Map<String, dynamic> json) {
-    return Mensaje(
-      id: json['_id'],
-      idConversacion: json['id_conversacion'],
-      emisor: json['emisor'],
-      receptor: json['receptor'],
-      contenido: json['contenido'],
-      tipo: json['tipo'] ?? 'texto',
-      leido: json['leido'] ?? false,
-      fechaCreacion: DateTime.parse(json['fecha_creacion']),
-      fechaLeido: json['fecha_leido'] != null ? DateTime.parse(json['fecha_leido']) : null,
+  factory ChatRoom.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+    // Convertir el map de info de participantes
+    Map<String, ChatInfo> infoMap = {};
+    if (data['infoParticipantes'] != null) {
+      (data['infoParticipantes'] as Map<String, dynamic>).forEach((key, value) {
+        infoMap[key] = ChatInfo.fromMap(value as Map<String, dynamic>);
+      });
+    }
+
+    return ChatRoom(
+      id: doc.id,
+      participantes: List<String>.from(data['participantes'] ?? []),
+      ultimoMensaje: data['ultimoMensaje'],
+      ultimaActualizacion: (data['ultimaActualizacion'] as Timestamp).toDate(),
+      leido: Map<String, bool>.from(data['leido'] ?? {}),
+      infoParticipantes: infoMap,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toFirestore() {
+    Map<String, dynamic> infoMap = {};
+    infoParticipantes.forEach((key, value) {
+      infoMap[key] = value.toMap();
+    });
+
     return {
-      '_id': id,
-      'id_conversacion': idConversacion,
-      'emisor': emisor,
-      'receptor': receptor,
+      'participantes': participantes,
+      'ultimoMensaje': ultimoMensaje,
+      'ultimaActualizacion': Timestamp.fromDate(ultimaActualizacion),
+      'leido': leido,
+      'infoParticipantes': infoMap,
+    };
+  }
+}
+
+class ChatInfo {
+  final String nombreMascota;
+  final String? fotoMascota;
+  final DateTime ultimaVezVisto;
+  final bool escribiendo;
+
+  ChatInfo({
+    required this.nombreMascota,
+    this.fotoMascota,
+    required this.ultimaVezVisto,
+    this.escribiendo = false,
+  });
+
+  factory ChatInfo.fromMap(Map<String, dynamic> map) {
+    return ChatInfo(
+      nombreMascota: map['nombreMascota'] ?? '',
+      fotoMascota: map['fotoMascota'],
+      ultimaVezVisto: (map['ultimaVezVisto'] as Timestamp).toDate(),
+      escribiendo: map['escribiendo'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'nombreMascota': nombreMascota,
+      'fotoMascota': fotoMascota,
+      'ultimaVezVisto': Timestamp.fromDate(ultimaVezVisto),
+      'escribiendo': escribiendo,
+    };
+  }
+}
+
+class ChatMessage {
+  final String id;
+  final String roomId;
+  final String emisorId;
+  final String contenido;
+  final String tipo;
+  final DateTime timestamp;
+  final Map<String, bool> leido;
+  final Map<String, DateTime>? fechasLeido;
+  final Map<String, dynamic>? metadata;
+
+  ChatMessage({
+    required this.id,
+    required this.roomId,
+    required this.emisorId,
+    required this.contenido,
+    this.tipo = 'texto',
+    required this.timestamp,
+    required this.leido,
+    this.fechasLeido,
+    this.metadata,
+  });
+
+  factory ChatMessage.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+    // Convertir el map de fechas de leído
+    Map<String, DateTime>? fechasMap;
+    if (data['fechasLeido'] != null) {
+      fechasMap = {};
+      (data['fechasLeido'] as Map<String, dynamic>).forEach((key, value) {
+        fechasMap![key] = (value as Timestamp).toDate();
+      });
+    }
+
+    return ChatMessage(
+      id: doc.id,
+      roomId: data['roomId'],
+      emisorId: data['emisorId'],
+      contenido: data['contenido'],
+      tipo: data['tipo'] ?? 'texto',
+      timestamp: (data['timestamp'] as Timestamp).toDate(),
+      leido: Map<String, bool>.from(data['leido'] ?? {}),
+      fechasLeido: fechasMap,
+      metadata: data['metadata'],
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    // Convertir el map de fechas para Firestore
+    Map<String, Timestamp>? fechasMap;
+    if (fechasLeido != null) {
+      fechasMap = {};
+      fechasLeido!.forEach((key, value) {
+        fechasMap![key] = Timestamp.fromDate(value);
+      });
+    }
+
+    return {
+      'roomId': roomId,
+      'emisorId': emisorId,
       'contenido': contenido,
       'tipo': tipo,
+      'timestamp': Timestamp.fromDate(timestamp),
       'leido': leido,
-      'fecha_creacion': fechaCreacion.toIso8601String(),
-      'fecha_leido': fechaLeido?.toIso8601String(),
+      'fechasLeido': fechasMap,
+      'metadata': metadata,
     };
   }
 }
