@@ -17,10 +17,12 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        print('Response data: ${response.data}'); // Imprime la respuesta completa
+        print(
+            'Response data: ${response.data}'); // Imprime la respuesta completa
         return response.data;
       } else {
-        print('Error: ${response.data['mensaje']}'); // Imprime el mensaje de error
+        print(
+            'Error: ${response.data['mensaje']}'); // Imprime el mensaje de error
         throw Exception('Failed to login: ${response.data['mensaje']}');
       }
     } catch (e) {
@@ -297,18 +299,32 @@ class ApiService {
 
   darLike(String userId, String idUsuario) {}
 
-   // Método para crear un match
+  // Método para crear un match
   Future<void> createMatch(Map<String, dynamic> matchData, profile) async {
     try {
+      // Obtener el token de SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('Token no encontrado');
+      }
+
       final response = await _dio.post(
         'https://dogzline-1.onrender.com/api/matchs',
         data: matchData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
       );
 
       if (response.statusCode == 201) {
         print("Match creado exitosamente");
       } else {
-        print('Error al crear el match: ${response.statusCode} ${response.statusMessage}');
+        print(
+            'Error al crear el match: ${response.statusCode} ${response.statusMessage}');
         throw Exception('Error al crear el match');
       }
     } catch (e) {
@@ -316,39 +332,23 @@ class ApiService {
       throw Exception('Error al crear el match: $e');
     }
   }
-  // Método para crear una conversación
-  Future<String> createConversacion(List<String> participantes) async {
+
+  // Método para obtener conversaciones por usuario
+ Future<List<Map<String, dynamic>>> getConversacionesByUserId(String userId) async {
   try {
-    final response = await _dio.post(
-      'https://dogzline-1.onrender.com/api/conversaciones',
-      data: {'participantes': participantes},
+    final response = await _dio.get(
+      'https://dogzline-1.onrender.com/api/conversaciones/$userId',
     );
 
-    if (response.statusCode == 201) {
-      return response.data['_id']; // Retornar el ID de la conversación creada
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(response.data);
     } else {
-      throw Exception('Error al crear la conversación');
+      throw Exception('Error al obtener las conversaciones');
     }
   } catch (e) {
-    throw Exception('Error al crear la conversación: $e');
+    throw Exception('Error al obtener las conversaciones: $e');
   }
 }
-  // Método para obtener conversaciones por usuario
-  Future<List<dynamic>> getConversacionesByUserId(String userId) async {
-    try {
-      final response = await _dio.get(
-        'https://dogzline-1.onrender.com/api/conversaciones/$userId',
-      );
-
-      if (response.statusCode == 200) {
-        return response.data;
-      } else {
-        throw Exception('Error al obtener las conversaciones');
-      }
-    } catch (e) {
-      throw Exception('Error al obtener las conversaciones: $e');
-    }
-  }
 
   // Método para enviar un mensaje
   Future<void> createMensaje(Map<String, dynamic> mensajeData) async {
@@ -382,21 +382,54 @@ class ApiService {
       throw Exception('Error al obtener los mensajes: $e');
     }
   }
+
 // Método para obtener mensajes por ID de conversación
-Future<List<dynamic>> getMensajesByConversacion(String conversacionId) async {
+  Future<List<dynamic>> getMensajesByConversacion(String conversacionId) async {
+    try {
+      final response = await _dio.get(
+        'https://dogzline-1.onrender.com/api/mensajes/conversacion/$conversacionId',
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('Error al obtener los mensajes de la conversación');
+      }
+    } catch (e) {
+      throw Exception('Error al obtener los mensajes de la conversación: $e');
+    }
+  }
+
+ Future<String> createConversacion(List<String> participantes) async {
   try {
-    final response = await _dio.get(
-      'https://dogzline-1.onrender.com/api/mensajes/conversacion/$conversacionId',
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      throw Exception('Token no encontrado');
+    }
+
+    final response = await _dio.post(
+      'https://dogzline-1.onrender.com/api/conversaciones',
+      data: {'participantes': participantes},
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      ),
     );
 
-    if (response.statusCode == 200) {
-      return response.data;
+    print("Código de respuesta: ${response.statusCode}");
+    print("Respuesta del servidor: ${response.data}");
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      return response.data['_id']; // Retornar el ID de la conversación creada
     } else {
-      throw Exception('Error al obtener los mensajes de la conversación');
+      throw Exception('Error al crear la conversación: ${response.statusCode} ${response.statusMessage}');
     }
   } catch (e) {
-    throw Exception('Error al obtener los mensajes de la conversación: $e');
+    print("Error al crear la conversación: $e");
+    throw Exception('Error al crear la conversación: $e');
   }
 }
-
 }

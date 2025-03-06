@@ -107,44 +107,29 @@ class _MatchScreenState extends State<MatchScreen> {
     });
   }
 
-  void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
-    _showAction("LIKE ❤️", Colors.green);
-    if (!_likedDogsByProfile.containsKey(profileId)) {
-      _likedDogsByProfile[profileId] = [];
-    }
-    _likedDogsByProfile[profileId]!.insert(0, profile);
-    _saveLikedDogs(profileId);
-    _sendLikeNotification(profile);
-
-    // Crear el match automáticamente
-    try {
-      await _apiService.createMatch({'idUsuario': profileId}, profile['id']);
-      if (true) {
-        print("Match creado exitosamente");
-
-        // Crear la conversación automáticamente
-        final conversacion =
-            await _apiService.createConversacion(profile['id']);
-        if (conversacion != null) {
-          print("Conversación creada exitosamente");
-
-          // Redirigir a la lista de chats
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatListScreen(
-                currentUserId: _currentUserId!,
-                matches: _likedDogsByProfile[_currentUserId] ?? [],
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      print("Error al crear match o conversación: $e");
-    }
+void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
+  _showAction("LIKE ❤️", Colors.green);
+  if (!_likedDogsByProfile.containsKey(profileId)) {
+    _likedDogsByProfile[profileId] = [];
   }
+  _likedDogsByProfile[profileId]!.insert(0, profile);
+  _saveLikedDogs(profileId);
+  _sendLikeNotification(profile);
 
+  // Crear el match automáticamente
+  try {
+    await _apiService.createMatch({'idUsuario': profileId}, profile['id']);
+    print("Match creado exitosamente");
+
+    // Crear la conversación automáticamente
+    final conversacionId = await _apiService.createConversacion([profileId, _currentUserId!]);
+    if (conversacionId.isNotEmpty) {
+      print("Conversación creada exitosamente");
+    }
+  } catch (e) {
+    print("Error al crear match o conversación: $e");
+  }
+}
   void _onDislikeAction(Map<String, dynamic> profile, String profileId) {
     _showAction("DISLIKE ❌", Colors.red);
     if (!_dislikedDogsByProfile.containsKey(profileId)) {

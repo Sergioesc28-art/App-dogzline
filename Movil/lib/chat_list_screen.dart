@@ -5,8 +5,9 @@ import 'models/data_model.dart';
 
 class ChatListScreen extends StatefulWidget {
   final String currentUserId;
+  final List<Map<String, dynamic>> matches;
 
-  ChatListScreen({required this.currentUserId, required List<Map<String, dynamic>> matches});
+  ChatListScreen({required this.currentUserId, required this.matches});
 
   @override
   _ChatListScreenState createState() => _ChatListScreenState();
@@ -14,7 +15,7 @@ class ChatListScreen extends StatefulWidget {
 
 class _ChatListScreenState extends State<ChatListScreen> {
   final ApiService _apiService = ApiService();
-  List<Map<String, dynamic>> _conversations = [];
+  List<Conversacion> _conversations = [];
 
   @override
   void initState() {
@@ -24,10 +25,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   Future<void> _loadConversations() async {
     try {
-      List<Map<String, dynamic>> conversations =
-    List<Map<String, dynamic>>.from(await _apiService.getConversacionesByUserId(widget.currentUserId));
+      List<Map<String, dynamic>> conversationsData =
+          await _apiService.getConversacionesByUserId(widget.currentUserId);
+      print("Conversaciones cargadas: $conversationsData");
       setState(() {
-        _conversations = conversations;
+        _conversations = conversationsData.map((data) => Conversacion.fromJson(data)).toList();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -49,26 +51,39 @@ class _ChatListScreenState extends State<ChatListScreen> {
               itemCount: _conversations.length,
               itemBuilder: (context, index) {
                 final conversation = _conversations[index];
-                final chatId = conversation['idConversacion'];
-                final matchUserName = conversation['nombre'];
-                final matchUserId = conversation['idUsuario'];
+                final chatId = conversation.id;
+                final matchUserName = conversation.ultimoMensaje ?? 'Usuario desconocido';
+                final participantes = conversation.participantes;
+                
+                // Verificar que participantes sea una lista
+                if (participantes is List<String>) {
+                  final matchUserId = participantes.firstWhere(
+                    (id) => id != widget.currentUserId,
+                    orElse: () => '',
+                  );
 
-                return ListTile(
-                  title: Text(matchUserName ?? 'Usuario desconocido'),
-                  subtitle: Text('Tap para chatear'),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatScreen(
-                          currentUserId: widget.currentUserId,
-                          matchUserId: matchUserId,
-                          chatId: chatId, // Pasamos el id de la conversación
+                  return ListTile(
+                    title: Text(matchUserName),
+                    subtitle: Text('Tap para chatear'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatScreen(
+                            currentUserId: widget.currentUserId,
+                            matchUserId: matchUserId,
+                            chatId: chatId, // Pasamos el id de la conversación
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
+                      );
+                    },
+                  );
+                } else {
+                  return ListTile(
+                    title: Text('Error en los datos de la conversación'),
+                    subtitle: Text('Tap para chatear'),
+                  );
+                }
               },
             ),
     );
