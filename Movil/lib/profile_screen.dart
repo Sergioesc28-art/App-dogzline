@@ -123,14 +123,12 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.settings,
-              color: Colors.brown[
-                  700]), // Cambiar el icono de filtrado al de configuración
+              color: Colors.brown[700]), // Cambiar el icono de filtrado al de configuración
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) =>
-                      SettingsScreen()), // Navegar a SettingsScreen
+                  builder: (context) => SettingsScreen()), // Navegar a SettingsScreen
             );
           },
         ),
@@ -415,20 +413,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     trailing: notificacion.leido
                         ? Icon(Icons.check, color: Colors.green)
                         : Icon(Icons.circle, color: Colors.red, size: 12),
-                    onTap: () {
-                      // Marcar como leída la notificación
-                      ApiService().marcarNotificacionComoLeida(notificacion.id);
-
-                      // Navegar a la pantalla de detalles
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DogDetailScreen(
-                            idDogLiked: notificacion.idMascota,
-                          ),
-                        ),
-                      );
-                    },
                   );
                 },
               );

@@ -3,12 +3,14 @@ class User {
   final String contrasena;
   final String token;
   final String role;
+  final String nombreCompleto;  // Nuevo campo agregado
 
   User({
     required this.email,
     required this.token,
     required this.role,
     required this.contrasena,
+    required this.nombreCompleto,  // Incluir en el constructor
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class User {
       email: json['email'] ?? '',
       role: json['role'] ?? '',
       contrasena: json['contrasena'] ?? '',
+      nombreCompleto: json['NombreCompleto'] ?? '',  // Asegúrate de que el campo coincide con el JSON
     );
   }
 
@@ -26,9 +29,11 @@ class User {
       'email': email,
       'role': role,
       'contrasena': contrasena,
+      'NombreCompleto': nombreCompleto,  // Incluir en el JSON
     };
   }
 }
+
 
 class Data {
   final String id;
