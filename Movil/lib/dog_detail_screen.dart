@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'models/data_model.dart';
 import 'services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart'; // Importa Google Fonts
 
 class DogDetailScreen extends StatefulWidget {
   final String? idDogLiked; // ID del perro que dio "like" (opcional)
@@ -68,9 +69,9 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.amber.shade100,
+        backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.brown),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -95,7 +96,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
             const SizedBox(height: 10),
             Text(
               likedDog!.nombre,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.brown[800]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
@@ -109,6 +110,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
           ],
         ),
       ),
+      backgroundColor: Color(0xFFF9F6E8), // Fondo beige
     );
   }
 
@@ -121,7 +123,7 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasData && snapshot.data != null) {
           return ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20), // Ajusta el radio de las esquinas aquí
             child: Image.memory(snapshot.data!, fit: BoxFit.cover),
           );
         } else {
@@ -143,12 +145,18 @@ class _DogDetailScreenState extends State<DogDetailScreen> {
   // Mostrar información clave-valor
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Text('$label ', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            '$label ',
+            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.brown[700]),
+          ),
           Expanded(
-            child: Text(value, style: const TextStyle(fontSize: 16)),
+            child: Text(
+              value,
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.brown[500]),
+            ),
           ),
         ],
       ),

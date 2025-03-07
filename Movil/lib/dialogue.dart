@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart'; // Importa Google Fonts
 import 'payment.dart'; // Importa el PaymentPage
 
 void main() {
@@ -38,60 +39,67 @@ class _DialogueScreenState extends State<DialogueScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F2DE), // Fondo beige
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F2DE),
+        backgroundColor: Colors.white, // Banner blanco
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: const Icon(Icons.close, color: Colors.brown),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+        title: Text(
           'Dogzline',
-          style: TextStyle(
-            fontFamily: 'Cursive',
+          style: GoogleFonts.poppins(
             fontSize: 24,
-            color: Colors.brown,
+            fontWeight: FontWeight.bold,
+            color: Colors.brown[800], // Mismo color que usas con los demás
           ),
         ),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               '❤️ Ya no te quedan Likes?',
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Muestra tu interés con un like y haz match. ¡Tendrás la posibilidad de hacer match!',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+              style: GoogleFonts.poppins(fontSize: 16),
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 AnimatedPlanCard(
-                  duration: '1 semana',
+                  duration: '5 Likes',
                   price: 'MxN 30.00',
-                  isSelected: _selectedPlan == '1 semana',
-                  onTap: () => _selectPlan('1 semana'),
+                  isSelected: _selectedPlan == '5 Likes',
+                  onTap: () => _selectPlan('5 Likes'),
                 ),
                 AnimatedPlanCard(
-                  duration: '1 mes',
-                  price: 'MxN 90.00',
-                  isBestOffer: true,
-                  isSelected: _selectedPlan == '1 mes',
-                  onTap: () => _selectPlan('1 mes'),
+                  duration: '10 Likes',
+                  price: 'MxN 60.00',
+                  isSelected: _selectedPlan == '10 Likes',
+                  onTap: () => _selectPlan('10 Likes'),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            AnimatedPlanCard(
+              duration: 'Inscripción',
+              price: 'MxN 150.00',
+              isBestOffer: true,
+              isSelected: _selectedPlan == 'Inscripción',
+              onTap: () => _selectPlan('Inscripción'),
             ),
             const SizedBox(height: 16),
             Container(
@@ -106,17 +114,22 @@ class _DialogueScreenState extends State<DialogueScreen> {
                   _FeatureItem(text: 'Coincidencias Prioritarias'),
                   _FeatureItem(text: 'Historial Detallado de Salud y Genética'),
                   _FeatureItem(text: 'Mensajería Ilimitada'),
+                  _FeatureItem(text: 'Likes Ilimitados'),
+                  _FeatureItem(text: 'Perro en Destacados'),
+                  _FeatureItem(text: 'Sin Anuncios'),
                 ],
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PaymentPage()),
-                );
-              },
+              onPressed: _selectedPlan.isEmpty
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PaymentPage()),
+                      );
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD6A66E),
                 minimumSize: const Size(double.infinity, 50),
@@ -124,9 +137,9 @@ class _DialogueScreenState extends State<DialogueScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Realizar pago',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: GoogleFonts.poppins(fontSize: 18, color: Colors.white),
               ),
             ),
           ],
@@ -195,7 +208,7 @@ class AnimatedPlanCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               duration,
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -203,7 +216,7 @@ class AnimatedPlanCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               price,
-              style: const TextStyle(fontSize: 16),
+              style: GoogleFonts.poppins(fontSize: 16),
             ),
           ],
         ),
@@ -228,7 +241,7 @@ class _FeatureItem extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(fontSize: 16),
+              style: GoogleFonts.poppins(fontSize: 16),
             ),
           ),
         ],

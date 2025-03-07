@@ -51,7 +51,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5EEDC),
+      backgroundColor: Color(0xFFF9F6E8), // Color de fondo actualizado
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -77,7 +77,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     SizedBox(height: 12),
                     Text(
                       _userName,
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown[700], // Color de texto actualizado
+                      ),
                     ),
                     SizedBox(height: 8),
                     Row(
@@ -95,7 +99,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
             SizedBox(height: 20),
             Text(
               'Perros registrados',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.brown[700], // Color de texto actualizado
+              ),
             ),
             SizedBox(height: 10),
             _isLoading
@@ -111,7 +119,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             image: mascota.fotos != null && mascota.fotos!.isNotEmpty
                                 ? MemoryImage(base64Decode(mascota.fotos!.split(',').last))
                                 : AssetImage('assets/default_dog.png') as ImageProvider,
-                            name: mascota.nombre ??  'Sin nombre',
+                            name: mascota.nombre ?? 'Sin nombre',
                             age: mascota.edad?.toString() ?? '0',
                           );
                         }).toList(),
@@ -141,7 +149,11 @@ class PetCard extends StatelessWidget {
         SizedBox(height: 6),
         Text(
           '$name, $age',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.brown[700], // Color de texto actualizado
+          ),
         ),
       ],
     );

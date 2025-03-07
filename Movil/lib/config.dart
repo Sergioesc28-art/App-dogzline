@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'profile_screen.dart'; // Importa el ProfileScreen
 import 'main.dart'; // Importa el LoginPage
 import 'package:shared_preferences/shared_preferences.dart'; // Importa SharedPreferences
+import 'package:google_fonts/google_fonts.dart'; // Importa Google Fonts
 
 void main() {
   runApp(MyApp());
@@ -31,24 +32,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFFF8E1), // Fondo amarillo claro
+      backgroundColor: Color(0xFFF9F6E8), // Fondo beige
       appBar: AppBar(
-        backgroundColor: Color(0xFFFFF8E1),
+        backgroundColor: Colors.white, // Barra de color blanco
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.brown),
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
+              MaterialPageRoute(builder: (context) => ProfileScreen()), // Usa la clase ProfileScreen
             );
           },
         ),
         title: Text(
-          'Configuraciones y Privacidad',
-          style: TextStyle(
+          'Configuraciones',
+          style: GoogleFonts.poppins(
             color: Colors.brown,
-            fontFamily: 'Cursive',
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
@@ -109,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   child: Text(
                     'Cerrar sesión',
-                    style: TextStyle(color: Colors.white),
+                    style: GoogleFonts.poppins(color: Colors.white),
                   ),
                 ),
               ),
@@ -136,7 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.brown, fontSize: 16),
+          style: GoogleFonts.poppins(color: Colors.brown, fontSize: 16),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -150,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: onChanged,
               ),
             ),
-            Text(value, style: TextStyle(color: Colors.brown)),
+            Text(value, style: GoogleFonts.poppins(color: Colors.brown)),
           ],
         ),
       ],
@@ -164,7 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(color: Colors.brown, fontSize: 14),
+            style: GoogleFonts.poppins(color: Colors.brown, fontSize: 14),
           ),
         ),
         Switch(
@@ -182,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.brown, fontSize: 16),
+          style: GoogleFonts.poppins(color: Colors.brown, fontSize: 16),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -199,7 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             Text(
               '${currentRange.start.toInt()}-${currentRange.end.toInt()}',
-              style: TextStyle(color: Colors.brown),
+              style: GoogleFonts.poppins(color: Colors.brown),
             ),
           ],
         ),

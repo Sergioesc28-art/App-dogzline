@@ -8,27 +8,20 @@ class DogsListScreen extends StatelessWidget {
 
   DogsListScreen({required this.title, required this.dogs});
 
-  Widget _buildDogProfileCard(Map<String, dynamic> dog) {
-    Uint8List? imageBytes;
+  Uint8List? _getImageBytes(String? imageString) {
+    if (imageString == null || imageString.isEmpty) return null;
     try {
-      String? imageData = dog['image'];
-
-      if (imageData != null && imageData.isNotEmpty) {
-        // Extraer la parte base64 si tiene prefijo
-        if (imageData.contains(',')) {
-          imageData = imageData.split(',').last;
-        }
-
-        // Eliminar espacios en blanco y caracteres no válidos
-        imageData = imageData.replaceAll(RegExp(r'\s+'), '');
-
-        // Decodificar la imagen base64
-        imageBytes = base64Decode(imageData);
-      }
+      String base64Data = imageString.contains(',') ? imageString.split(',').last.trim() : imageString;
+      while (base64Data.length % 4 != 0) base64Data += '=';
+      return base64Decode(base64Data);
     } catch (e) {
-      print('Error decodificando imagen base64: $e');
-      imageBytes = null;
+      print('Error decodificando la imagen: $e');
+      return null;
     }
+  }
+
+  Widget _buildDogProfileCard(Map<String, dynamic> dog) {
+    Uint8List? imageBytes = _getImageBytes(dog['fotos']);
 
     return Container(
       width: 150,

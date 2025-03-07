@@ -72,56 +72,6 @@ class _MatchesScreenState extends State<MatchesScreen> {
     });
   }
 
-  Widget _buildLikesSection() {
-    return Column(
-      children: [
-        SizedBox(height: 20),
-        Text(
-          'Asciende a Premium y descubre quién ya te dio Like',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.brown),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 20),
-        Center(
-          child: Container(
-            width: 150,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 10),
-                Text('Nombre', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.brown)),
-                Text('Edad', style: TextStyle(fontSize: 16, color: Colors.brown.shade400)),
-              ],
-            ),
-          ),
-        ),
-        Spacer(),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: null, // Elimina la función onPressed
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF8B6F47), // Café bajo
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-            ),
-            child: Text(
-              'Descubre a quién le gustas',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFEFE6DD)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTopPicksSection() {
     return SingleChildScrollView(
       child: Column(
@@ -191,7 +141,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
       width: 150,
       margin: EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Colors.brown.shade50, // Café bajísimo
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -231,7 +181,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
       width: 150,
       margin: EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Colors.brown.shade50, // Café bajísimo
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
@@ -286,56 +236,39 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: Color(0xFFEFE6DD), // Beige
-        appBar: AppBar(
-          backgroundColor: Color(0xFF8B6F47), // Café bajo
-          title: Text(
-            'Dogzline',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+    return Scaffold(
+      backgroundColor: Color(0xFFF9F6E8), // Beige
+      appBar: AppBar(
+        backgroundColor: Colors.white, // Barra de color blanco
+        title: Text(
+          'Dogzline',
+          style: TextStyle(color: Colors.brown[800], fontWeight: FontWeight.bold, fontSize: 22), // Palabra Dogzline en negro
+        ),
+        centerTitle: true,
+      ),
+      body: _buildTopPicksSection(),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: '',
           ),
-          centerTitle: true,
-          bottom: TabBar(
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.grey.shade400,
-            tabs: [
-              Tab(text: 'Likes'),
-              Tab(text: 'Top Picks'),
-            ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: '',
           ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildLikesSection(),
-            _buildTopPicksSection(),
-          ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: '',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.message), // Cambiar a icono de mensajería
-              label: '',
-            ),
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.brown[700],
-          unselectedItemColor: Colors.grey,
-          onTap: _onItemTapped,
-          iconSize: 36, // Tamaño de los iconos
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message), // Cambiar a icono de mensajería
+            label: '',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.grey.shade600, // Gris bajo pero no tan bajo
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        iconSize: 36, // Tamaño de los iconos
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
       ),
     );
   }

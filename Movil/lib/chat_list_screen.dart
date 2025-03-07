@@ -43,7 +43,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Chats'),
-        backgroundColor: Colors.brown[700],
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       body: _conversations.isEmpty
           ? Center(child: Text('No tienes conversaciones aún.'))

@@ -22,8 +22,13 @@ class DogzlineApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Colors.brown[700],
-        textTheme: GoogleFonts.poppinsTextTheme(),
+        primaryColor: Color(0xFFF9F6E8), // Beige
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme.apply(
+                bodyColor: Colors.brown[700], // Café claro
+                displayColor: Colors.brown[700], // Café claro
+              ),
+        ),
       ),
       home: MatchScreen(),
     );
@@ -331,11 +336,10 @@ void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AspectRatio(
-                  aspectRatio: 1,
-                  child: ClipRRect(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20), // Borde para toda la imagen
+                  child: AspectRatio(
+                    aspectRatio: 1,
                     child: Container(
                       color: Colors.white,
                       child: imageWidget,
@@ -351,7 +355,7 @@ void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.brown,
+                          color: Color(0xFF8B6F47), // Café bajo
                         ),
                       ),
                       SizedBox(height: 4),
@@ -421,11 +425,11 @@ void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Dogzline", style: GoogleFonts.pacifico(fontSize: 28)),
+        title: Text("Dogzline", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.brown[800])), // Tipografía y color actualizados
         centerTitle: true,
-        backgroundColor: Color(0xFF8B6F47),
+        backgroundColor: Colors.white, // Barra de color blanco
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: Colors.brown[800]), // Color de icono actualizado
           onPressed: () {
             Navigator.pop(context);
           },
@@ -487,7 +491,7 @@ void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
             label: '',
           ),
         ],
-        selectedItemColor: Colors.brown[700],
+        selectedItemColor: Color(0xFF8B6F47), // Café bajo
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           if (index == 1) {
@@ -521,6 +525,7 @@ void _onLikeAction(Map<String, dynamic> profile, String profileId) async {
         showSelectedLabels: false,
         showUnselectedLabels: false,
       ),
+      backgroundColor: Color(0xFFF9F6E8), // Beige
     );
   }
 }

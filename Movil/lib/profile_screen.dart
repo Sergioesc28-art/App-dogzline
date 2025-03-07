@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart'; // Importa Google Fonts
 import 'dialogue.dart'; // Importa el DialogueScreen
 import 'create_dog.dart'; // Importa el CreateDogPage
 import 'config.dart'; // Importa el SettingsScreen
@@ -66,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         },
         backgroundColor: Color(0xFF8B6F47), // Café bajo
-        child: Icon(Icons.add),
+        child: Icon(Icons.add, color: Colors.white), // Cruz blanca
       ),
       backgroundColor: Color(0xFFF9F6E8),
     );
@@ -119,25 +120,23 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.settings,
-              color: Colors.brown[700]), // Cambiar el icono de filtrado al de configuración
+          icon: Icon(Icons.settings, color: Colors.brown[700]),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (context) => SettingsScreen()), // Navegar a SettingsScreen
+              MaterialPageRoute(builder: (context) => SettingsScreen()),
             );
           },
         ),
         title: Text(
           'Dogzline',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 24,
-            color: Colors.brown[700],
             fontWeight: FontWeight.bold,
+            color: Colors.brown[700],
           ),
         ),
         centerTitle: true,
@@ -163,7 +162,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                 children: [
                   Text(
                     'Bienvenido, $_userName',
-                    style: TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.brown[700],
@@ -177,15 +176,14 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const DialogueScreen()),
+                  MaterialPageRoute(builder: (context) => const DialogueScreen()),
                 );
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.white, // Fondo blanco
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -200,7 +198,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                   children: [
                     Text(
                       'Dogzline',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.brown[700],
@@ -208,8 +206,8 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      '¿Qué incluye?',
-                      style: TextStyle(
+                      '¿Necesitas más likes?',
+                      style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.brown[700],
@@ -220,14 +218,20 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                       children: [
                         Icon(Icons.check, color: Colors.green),
                         SizedBox(width: 8),
-                        Text('Recomendaciones Personalizadas'),
+                        Text(
+                          'Recomendaciones',
+                          style: GoogleFonts.poppins(fontSize: 16),
+                        ),
                       ],
                     ),
                     Row(
                       children: [
                         Icon(Icons.check, color: Colors.green),
                         SizedBox(width: 8),
-                        Text('Coincidencias Prioritarias'),
+                        Text(
+                          'Coincidencias Prioritarias',
+                          style: GoogleFonts.poppins(fontSize: 16),
+                        ),
                       ],
                     ),
                   ],
@@ -244,7 +248,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
                       'Perros registrados',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.brown[700],
@@ -264,9 +268,7 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                     onTap: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                MatchScreen()),
+                                        MaterialPageRoute(builder: (context) => MatchScreen()),
                                       );
                                     },
                                     child: Column(
@@ -274,16 +276,15 @@ class _ProfileScreenContentState extends State<ProfileScreenContent> {
                                         CircleAvatar(
                                           radius: 30,
                                           backgroundImage: MemoryImage(
-                                              base64Decode(mascota.fotos!
-                                                  .split(',')
-                                                  .last)),
+                                              base64Decode(mascota.fotos!.split(',').last)),
                                         ),
                                         SizedBox(height: 8),
                                         Text(
                                           mascota.nombre ?? '',
-                                          style: TextStyle(
-                                              color: Colors
-                                                  .brown[700]), // Texto café
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.brown[700],
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -374,7 +375,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
         title: Text(
           'Notificaciones',
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 20,
             color: Colors.brown[700],
             fontWeight: FontWeight.bold,
@@ -406,13 +407,31 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   final notificacion = notifications[index];
                   return ListTile(
                     leading: _buildAvatarFromBase64(notificacion.foto),
-                    title: Text(notificacion.contenido),
+                    title: Text(
+                      notificacion.contenido,
+                      style: GoogleFonts.poppins(fontSize: 16),
+                    ),
                     subtitle: Text(
                       'Recibido el ${notificacion.mensajeLlegada.toLocal()}',
+                      style: GoogleFonts.poppins(fontSize: 14),
                     ),
                     trailing: notificacion.leido
                         ? Icon(Icons.check, color: Colors.green)
                         : Icon(Icons.circle, color: Colors.red, size: 12),
+                    onTap: () {
+                      // Marcar como leída la notificación
+                      ApiService().marcarNotificacionComoLeida(notificacion.id);
+
+                      // Navegar a la pantalla de detalles
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DogDetailScreen(
+                            idDogLiked: notificacion.idMascota,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               );

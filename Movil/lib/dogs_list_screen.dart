@@ -11,7 +11,9 @@ class DogsListScreen extends StatelessWidget {
   Widget _buildDogProfileCard(Map<String, dynamic> dog) {
     Uint8List? imageBytes;
     try {
-      imageBytes = base64Decode(dog['image'] ?? '');
+      if (dog['image'] != null && dog['image'].isNotEmpty) {
+        imageBytes = base64Decode(dog['image']);
+      }
     } catch (e) {
       print('Error decoding base64 image: $e');
     }
